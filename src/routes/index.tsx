@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useStore } from "@/lib/store";
 import { currentPeriods, relativeDay, summarizeMonth } from "@/lib/calc";
-import { monthKeyOf, monthLabel } from "@/lib/periods";
+import { fromISODate, monthKeyOf, monthLabel, periodTypeForDate } from "@/lib/periods";
 import { formatMoney } from "@/lib/format";
 import { Gauge } from "@/components/Gauge";
 import { PeriodCard } from "@/components/PeriodCard";
@@ -122,7 +122,9 @@ function Home() {
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-[14px]">{e.note || cat?.name || "Expense"}</p>
                     <p className="truncate text-[11px] text-mut">
-                      {cat?.name} · {e.periodType === "weekday" ? "Weekday" : "Weekend"} ·{" "}
+                      {cat?.name} ·{" "}
+                      {periodTypeForDate(fromISODate(e.date)) === "weekday" ? "Weekday" : "Weekend"}{" "}
+                      ·{" "}
                       {relativeDay(e.date)}
                     </p>
                   </div>

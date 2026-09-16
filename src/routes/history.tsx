@@ -4,7 +4,7 @@ import { Line, LineChart, ResponsiveContainer, Tooltip, XAxis } from "recharts";
 import { Trash2, Pencil } from "lucide-react";
 import { useStore } from "@/lib/store";
 import { historyTrend, monthsWithData, relativeDay, summarizeMonth } from "@/lib/calc";
-import { monthLabel } from "@/lib/periods";
+import { fromISODate, monthLabel, periodTypeForDate } from "@/lib/periods";
 import { formatCompact, formatMoney } from "@/lib/format";
 import { CategoryIcon } from "@/components/CategoryIcon";
 import { AddExpenseSheet } from "@/components/AddExpenseSheet";
@@ -156,7 +156,8 @@ function History() {
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-[14px]">{e.note || cat?.name || "Expense"}</p>
                   <p className="truncate text-[11px] text-mut">
-                    {cat?.name} · {e.periodType === "weekday" ? "Weekday" : "Weekend"} ·{" "}
+                    {cat?.name} ·{" "}
+                    {periodTypeForDate(fromISODate(e.date)) === "weekday" ? "Weekday" : "Weekend"} ·{" "}
                     {relativeDay(e.date)}
                   </p>
                 </div>
