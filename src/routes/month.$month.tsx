@@ -8,7 +8,8 @@ import {
   monthPeriodSummaries,
   summarizeMonth,
 } from "@/lib/calc";
-import { formatPeriodRange, monthLabel, periodContains } from "@/lib/periods";
+import { formatPeriodRange, fromISODate, monthLabel, periodContains } from "@/lib/periods";
+import { format } from "date-fns";
 import { formatMoney } from "@/lib/format";
 import { CategoryIcon } from "@/components/CategoryIcon";
 import { cn } from "@/lib/utils";
