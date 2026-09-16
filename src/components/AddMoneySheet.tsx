@@ -17,14 +17,13 @@ export function AddMoneySheet({
   const { addMoney, currency } = useStore();
   const [amount, setAmount] = useState("");
   const [date, setDate] = useState(toISODate(new Date()));
-  const [periodType, setPeriodType] = useState<PeriodType>(periodTypeForDate(new Date()));
   const [note, setNote] = useState("");
+  const periodType: PeriodType = date ? periodTypeForDate(fromISODate(date)) : "weekday";
 
   useEffect(() => {
     if (!open) return;
     setAmount("");
     setDate(toISODate(new Date()));
-    setPeriodType(periodTypeForDate(new Date()));
     setNote("");
   }, [open]);
 
