@@ -57,6 +57,15 @@ export function currentPeriodType(d = new Date()): PeriodType {
   return periodTypeForDate(d);
 }
 
+export function dateForPeriod(period: PeriodType, d = new Date()): Date {
+  const base = new Date(d);
+  if (period === "weekday") return base;
+
+  const day = base.getDay();
+  const daysUntilSaturday = (6 - day + 7) % 7;
+  return addDays(base, daysUntilSaturday);
+}
+
 export function periodContains(p: PeriodRange, dateISO: string): boolean {
   const d = fromISODate(dateISO);
   return isWithinInterval(d, { start: p.start, end: p.end });
