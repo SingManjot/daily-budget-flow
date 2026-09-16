@@ -20,13 +20,13 @@ export function Gauge({ ratio }: { ratio: number }) {
         className="anim-bar absolute left-5 top-[26px] h-px bg-brass/50"
         style={{ width: `calc((100% - 2.5rem) * ${fill / 100})` }}
       />
-      <div
-        className="absolute left-1/2 top-[18px] origin-bottom transition-transform duration-700"
-        style={{ transform: `translateX(-50%) rotate(${angle}deg)` }}
-      >
-        <div className="h-[30px] w-[2px] bg-brasshi" />
+      <div className="absolute left-1/2 top-[16px] -translate-x-1/2">
+        <div
+          className="h-[30px] w-[2px] origin-bottom bg-brasshi transition-transform duration-700"
+          style={{ transform: `rotate(${angle}deg)` }}
+        />
+        <div className="mx-auto -mt-[3px] size-1.5 rounded-full bg-brasshi" />
       </div>
-      <div className="absolute left-1/2 top-[46px] size-1.5 -translate-x-1/2 rounded-full bg-brasshi" />
       <span className="label-mono absolute bottom-2 left-5 text-[10px] text-mut">Under</span>
       <span className="label-mono absolute bottom-2 right-5 text-[10px] text-mut">Over</span>
     </div>

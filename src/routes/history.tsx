@@ -130,7 +130,8 @@ function History() {
                 </span>
               </div>
               <p className="mt-1.5 text-[12px] text-mut">
-                {formatCompact(s.spent, currency)} spent · {s.transactions} transactions
+                {formatCompact(s.spent, currency)} spent · {s.transactions}{" "}
+                {s.transactions === 1 ? "transaction" : "transactions"}
               </p>
             </Link>
           );
