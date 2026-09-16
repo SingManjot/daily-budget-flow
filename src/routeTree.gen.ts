@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as HistoryRouteImport } from './routes/history'
 import { Route as OverviewRouteImport } from './routes/overview'
+import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as MonthMonthRouteImport } from './routes/month.$month'
 
 const IndexRoute = IndexRouteImport.update({
@@ -29,6 +30,11 @@ const OverviewRoute = OverviewRouteImport.update({
   path: '/overview',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MonthMonthRoute = MonthMonthRouteImport.update({
   id: '/month/$month',
   path: '/month/$month',
@@ -39,12 +45,14 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/history': typeof HistoryRoute
   '/overview': typeof OverviewRoute
+  '/settings': typeof SettingsRoute
   '/month/$month': typeof MonthMonthRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/history': typeof HistoryRoute
   '/overview': typeof OverviewRoute
+  '/settings': typeof SettingsRoute
   '/month/$month': typeof MonthMonthRoute
 }
 export interface FileRoutesById {
@@ -52,20 +60,23 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/history': typeof HistoryRoute
   '/overview': typeof OverviewRoute
+  '/settings': typeof SettingsRoute
   '/month/$month': typeof MonthMonthRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/history' | '/overview' | '/month/$month'
+  fullPaths: '/' | '/history' | '/overview' | '/settings' | '/month/$month'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/history' | '/overview' | '/month/$month'
-  id: '__root__' | '/' | '/history' | '/overview' | '/month/$month'
+  to: '/' | '/history' | '/overview' | '/settings' | '/month/$month'
+  id:
+    '__root__' | '/' | '/history' | '/overview' | '/settings' | '/month/$month'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   HistoryRoute: typeof HistoryRoute
   OverviewRoute: typeof OverviewRoute
+  SettingsRoute: typeof SettingsRoute
   MonthMonthRoute: typeof MonthMonthRoute
 }
 
@@ -92,6 +103,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OverviewRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/month/$month': {
       id: '/month/$month'
       path: '/month/$month'
@@ -106,6 +124,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   HistoryRoute: HistoryRoute,
   OverviewRoute: OverviewRoute,
+  SettingsRoute: SettingsRoute,
   MonthMonthRoute: MonthMonthRoute,
 }
 export const routeTree = rootRouteImport
