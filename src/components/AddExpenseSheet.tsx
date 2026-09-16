@@ -21,9 +21,9 @@ export function AddExpenseSheet({
   const [amount, setAmount] = useState("");
   const [categoryId, setCategoryId] = useState("");
   const [date, setDate] = useState(toISODate(new Date()));
-  const [periodType, setPeriodType] = useState<PeriodType>(periodTypeForDate(new Date()));
-  const [periodTouched, setPeriodTouched] = useState(false);
   const [note, setNote] = useState("");
+  // Always derived from the chosen date — Mon–Fri is a weekday, Sat–Sun a weekend.
+  const periodType: PeriodType = date ? periodTypeForDate(fromISODate(date)) : "weekday";
 
   useEffect(() => {
     if (!open) return;
