@@ -108,7 +108,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" className="dark">
       <head>
         <HeadContent />
       </head>
@@ -120,13 +120,29 @@ function RootShell({ children }: { children: ReactNode }) {
   );
 }
 
+function AppGate() {
+  const { data, ready } = useStore();
+
+  if (!ready) return <div className="min-h-[100dvh] bg-background" />;
+  if (!data.user?.onboardingCompleted) return <Onboarding />;
+
+  return (
+    <AppShell>
+      {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+      <Outlet />
+    </AppShell>
+  );
+}
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
   return (
     <QueryClientProvider client={queryClient}>
-      {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <Outlet />
+      <StoreProvider>
+        <AppGate />
+        <Toaster position="top-center" />
+      </StoreProvider>
     </QueryClientProvider>
   );
 }
