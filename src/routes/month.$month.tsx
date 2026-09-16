@@ -8,7 +8,8 @@ import {
   monthPeriodSummaries,
   summarizeMonth,
 } from "@/lib/calc";
-import { formatPeriodRange, monthLabel, periodContains } from "@/lib/periods";
+import { formatPeriodRange, fromISODate, monthLabel, periodContains } from "@/lib/periods";
+import { format } from "date-fns";
 import { formatMoney } from "@/lib/format";
 import { CategoryIcon } from "@/components/CategoryIcon";
 import { cn } from "@/lib/utils";
@@ -106,7 +107,7 @@ function MonthDetail() {
           const diff = p.budget - p.spent;
           const isOpen = openPeriod === p.period.id;
           const rows = expenses.filter(
-            (e) => e.periodType === p.period.type && periodContains(p.period, e.date),
+            (e) => periodContains(p.period, e.date),
           );
           return (
             <div key={p.period.id} className="rounded-2xl bg-card ring-1 ring-hair">
@@ -172,7 +173,7 @@ function MonthDetail() {
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-[14px]">{e.note || cat?.name}</p>
                   <p className="text-[11px] text-mut">
-                    {cat?.name} · {e.date}
+                    {cat?.name} · {format(fromISODate(e.date), "EEE, d MMM")}
                   </p>
                 </div>
                 <span className="shrink-0 text-[14px] font-medium">

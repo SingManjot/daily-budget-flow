@@ -21,9 +21,9 @@ export function AddExpenseSheet({
   const [amount, setAmount] = useState("");
   const [categoryId, setCategoryId] = useState("");
   const [date, setDate] = useState(toISODate(new Date()));
-  const [periodType, setPeriodType] = useState<PeriodType>(periodTypeForDate(new Date()));
-  const [periodTouched, setPeriodTouched] = useState(false);
   const [note, setNote] = useState("");
+  // Always derived from the chosen date — Mon–Fri is a weekday, Sat–Sun a weekend.
+  const periodType: PeriodType = date ? periodTypeForDate(fromISODate(date)) : "weekday";
 
   useEffect(() => {
     if (!open) return;
@@ -31,17 +31,12 @@ export function AddExpenseSheet({
       setAmount(String(editing.amount));
       setCategoryId(editing.categoryId);
       setDate(editing.date);
-      setPeriodType(editing.periodType);
       setNote(editing.note ?? "");
-      setPeriodTouched(true);
     } else {
-      const today = toISODate(new Date());
       setAmount("");
       setCategoryId(data.categories[0]?.id ?? "");
-      setDate(today);
-      setPeriodType(periodTypeForDate(new Date()));
+      setDate(toISODate(new Date()));
       setNote("");
-      setPeriodTouched(false);
     }
   }, [open, editing, data.categories]);
 
@@ -110,33 +105,16 @@ export function AddExpenseSheet({
               <input
                 type="date"
                 value={date}
-                onChange={(e) => {
-                  setDate(e.target.value);
-                  if (!periodTouched && e.target.value) {
-                    setPeriodType(periodTypeForDate(fromISODate(e.target.value)));
-                  }
-                }}
+                onChange={(e) => setDate(e.target.value)}
                 className="mt-2 w-full rounded-xl bg-card px-3 py-2.5 text-[13px] text-foreground ring-1 ring-hair outline-none"
               />
             </div>
             <div>
               <p className="label-mono text-mut">Period</p>
-              <div className="mt-2 grid grid-cols-2 gap-1 rounded-xl bg-card p-1 ring-1 ring-hair">
-                {(["weekday", "weekend"] as PeriodType[]).map((p) => (
-                  <button
-                    key={p}
-                    onClick={() => {
-                      setPeriodType(p);
-                      setPeriodTouched(true);
-                    }}
-                    className={cn(
-                      "rounded-lg py-1.5 text-[12px] transition-colors",
-                      periodType === p ? "bg-brass/15 text-brasshi" : "text-mut",
-                    )}
-                  >
-                    {p === "weekday" ? "Weekday" : "Weekend"}
-                  </button>
-                ))}
+              <div className="mt-2 flex h-[42px] items-center justify-center rounded-xl bg-card ring-1 ring-hair">
+                <span className="text-[12px] text-brasshi">
+                  {periodType === "weekday" ? "Weekday" : "Weekend"}
+                </span>
               </div>
             </div>
           </div>

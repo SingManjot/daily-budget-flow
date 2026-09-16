@@ -56,11 +56,13 @@ export function summarizePeriod(
   today = new Date(),
 ): PeriodSummary {
   const budget = budgetForPeriod(data.budgets, p);
+  // Period membership is derived from the date itself, so an entry can never
+  // get stranded by a mismatched stored periodType.
   const spent = data.expenses
-    .filter((e) => e.periodType === p.type && periodContains(p, e.date))
+    .filter((e) => periodContains(p, e.date))
     .reduce((s, e) => s + e.amount, 0);
   const added = data.additions
-    .filter((a) => a.periodType === p.type && periodContains(p, a.date))
+    .filter((a) => periodContains(p, a.date))
     .reduce((s, a) => s + a.amount, 0);
   return {
     period: p,
@@ -112,10 +114,10 @@ export function summarizeMonth(data: AppData, monthKey: string): MonthSummary {
   }
   const exp = expensesInMonth(data.expenses, monthKey);
   const weekdaySpent = exp
-    .filter((e) => e.periodType === "weekday")
+    .filter((e) => periodTypeForDate(fromISODate(e.date)) === "weekday")
     .reduce((s, e) => s + e.amount, 0);
   const weekendSpent = exp
-    .filter((e) => e.periodType === "weekend")
+    .filter((e) => periodTypeForDate(fromISODate(e.date)) === "weekend")
     .reduce((s, e) => s + e.amount, 0);
   const planned = weekdayPlanned + weekendPlanned;
   const spent = weekdaySpent + weekendSpent;

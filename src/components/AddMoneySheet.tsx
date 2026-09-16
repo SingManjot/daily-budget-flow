@@ -5,7 +5,7 @@ import { AmountField } from "@/components/AmountField";
 import { useStore } from "@/lib/store";
 import { fromISODate, periodTypeForDate, toISODate } from "@/lib/periods";
 import type { PeriodType } from "@/lib/types";
-import { cn } from "@/lib/utils";
+
 
 export function AddMoneySheet({
   open,
@@ -17,14 +17,13 @@ export function AddMoneySheet({
   const { addMoney, currency } = useStore();
   const [amount, setAmount] = useState("");
   const [date, setDate] = useState(toISODate(new Date()));
-  const [periodType, setPeriodType] = useState<PeriodType>(periodTypeForDate(new Date()));
   const [note, setNote] = useState("");
+  const periodType: PeriodType = date ? periodTypeForDate(fromISODate(date)) : "weekday";
 
   useEffect(() => {
     if (!open) return;
     setAmount("");
     setDate(toISODate(new Date()));
-    setPeriodType(periodTypeForDate(new Date()));
     setNote("");
   }, [open]);
 
@@ -58,28 +57,16 @@ export function AddMoneySheet({
               <input
                 type="date"
                 value={date}
-                onChange={(e) => {
-                  setDate(e.target.value);
-                  if (e.target.value) setPeriodType(periodTypeForDate(fromISODate(e.target.value)));
-                }}
+                onChange={(e) => setDate(e.target.value)}
                 className="mt-2 w-full rounded-xl bg-card px-3 py-2.5 text-[13px] text-foreground ring-1 ring-hair outline-none"
               />
             </div>
             <div>
               <p className="label-mono text-mut">Period</p>
-              <div className="mt-2 grid grid-cols-2 gap-1 rounded-xl bg-card p-1 ring-1 ring-hair">
-                {(["weekday", "weekend"] as PeriodType[]).map((p) => (
-                  <button
-                    key={p}
-                    onClick={() => setPeriodType(p)}
-                    className={cn(
-                      "rounded-lg py-1.5 text-[12px] transition-colors",
-                      periodType === p ? "bg-brass/15 text-brasshi" : "text-mut",
-                    )}
-                  >
-                    {p === "weekday" ? "Weekday" : "Weekend"}
-                  </button>
-                ))}
+              <div className="mt-2 flex h-[42px] items-center justify-center rounded-xl bg-card ring-1 ring-hair">
+                <span className="text-[12px] text-brasshi">
+                  {periodType === "weekday" ? "Weekday" : "Weekend"}
+                </span>
               </div>
             </div>
           </div>
