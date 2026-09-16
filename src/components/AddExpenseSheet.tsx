@@ -31,17 +31,12 @@ export function AddExpenseSheet({
       setAmount(String(editing.amount));
       setCategoryId(editing.categoryId);
       setDate(editing.date);
-      setPeriodType(editing.periodType);
       setNote(editing.note ?? "");
-      setPeriodTouched(true);
     } else {
-      const today = toISODate(new Date());
       setAmount("");
       setCategoryId(data.categories[0]?.id ?? "");
-      setDate(today);
-      setPeriodType(periodTypeForDate(new Date()));
+      setDate(toISODate(new Date()));
       setNote("");
-      setPeriodTouched(false);
     }
   }, [open, editing, data.categories]);
 
