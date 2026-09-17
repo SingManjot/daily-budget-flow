@@ -51,6 +51,7 @@
 }
 
 :root {
+  --app-height: 100vh;
   --radius: 1rem;
   --background: oklch(0.145 0.004 285);
   --foreground: oklch(0.955 0.006 90);
@@ -78,6 +79,13 @@
   --brasshi: oklch(0.76 0.07 75);
   --under: oklch(0.71 0.07 150);
   --over: oklch(0.63 0.11 35);
+}
+
+html,
+body,
+#root {
+  min-height: var(--app-height);
+  height: var(--app-height);
 }
 
 @layer base {

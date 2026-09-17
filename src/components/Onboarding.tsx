@@ -97,7 +97,7 @@ export function Onboarding() {
   };
 
   return (
-    <div className="mx-auto flex min-h-[100dvh] w-full max-w-[420px] flex-col px-6 pb-8 pt-16">
+    <div className="mx-auto flex min-h-[var(--app-height)] w-full max-w-[420px] flex-col px-6 pb-8 pt-16">
       {steps[step]}
       <div className="mt-10">
         <div className="mb-5 flex gap-1.5">
