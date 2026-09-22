@@ -1,9 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useStore } from "@/lib/store";
-import { currentPeriods, relativeDay, summarizeMonth } from "@/lib/calc";
+import { currentPeriods, monthProgress, relativeDay, summarizeMonth } from "@/lib/calc";
 import { fromISODate, monthKeyOf, monthLabel, periodTypeForDate } from "@/lib/periods";
 import { formatMoney } from "@/lib/format";
-import { Gauge } from "@/components/Gauge";
+import { MonthProgress } from "@/components/MonthProgress";
 import { PeriodCard } from "@/components/PeriodCard";
 import { CategoryIcon } from "@/components/CategoryIcon";
 import { cn } from "@/lib/utils";
@@ -32,12 +32,13 @@ function Home() {
   const now = new Date();
   const monthKey = monthKeyOf(now);
   const month = summarizeMonth(data, monthKey);
+  const progress = monthProgress(data, monthKey, now);
   const { weekday, weekend, activeType } = currentPeriods(data, now);
   const recent = [...data.expenses]
     .sort((a, b) => b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt))
     .slice(0, 4);
-  const hasSpending = month.spent > 0;
-  const saved = month.result >= 0;
+  const hasSpending = progress.hasSettled;
+  const saved = progress.result >= 0;
 
   return (
     <div>
@@ -61,7 +62,7 @@ function Home() {
               <span
                 className={cn("font-mono text-[26px] leading-none", saved ? "text-brasshi" : "text-over")}
               >
-                {formatMoney(month.result, currency)}
+                {formatMoney(progress.result, currency)}
               </span>
               <span
                 className={cn(
@@ -73,8 +74,8 @@ function Home() {
               </span>
             </div>
             <p className="anim-rise mt-3 text-[13px] text-mut">
-              {formatMoney(month.spent, currency)} spent of {formatMoney(month.planned, currency)}{" "}
-              planned
+              {formatMoney(month.spent, currency)} spent so far · {formatMoney(month.planned, currency)}{" "}
+              planned for {monthLabel(monthKey, false)}
             </p>
           </>
         ) : (
@@ -83,14 +84,15 @@ function Home() {
               Let&apos;s see how you do this month.
             </h1>
             <p className="anim-rise mt-3 text-[13px] text-mut">
-              {formatMoney(0, currency)} spent of {formatMoney(month.planned, currency)} planned
+              {formatMoney(month.spent, currency)} spent so far · savings appear when this
+              week&apos;s blocks close
             </p>
           </>
         )}
       </section>
 
       <section className="mt-6 px-6">
-        <Gauge ratio={month.planned > 0 ? month.spent / month.planned : 0} />
+        <MonthProgress progress={progress} currency={currency} />
       </section>
 
       <section className="mt-6 space-y-3 px-6">

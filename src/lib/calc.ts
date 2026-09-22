@@ -189,6 +189,89 @@ export function historyTrend(data: AppData, months: number) {
   });
 }
 
+export interface ProgressCell {
+  id: string;
+  label: string;
+  type: PeriodType;
+  planned: number;
+  spent: number;
+  state: "past" | "current" | "future";
+}
+
+export interface MonthProgress {
+  cells: ProgressCell[];
+  /** planned/spent of periods that have fully finished within this month */
+  settledPlanned: number;
+  settledSpent: number;
+  /** settledPlanned - settledSpent; the savings banked so far this month */
+  result: number;
+  hasSettled: boolean;
+}
+
+/**
+ * Month-to-date view: savings only count once a weekday/weekend block has
+ * fully finished. Every month restarts at zero on the 1st.
+ */
+export function monthProgress(
+  data: AppData,
+  monthKey: string,
+  today = new Date(),
+): MonthProgress {
+  const t = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  const cells: ProgressCell[] = [];
+  let settledPlanned = 0;
+  let settledSpent = 0;
+  let weekIndex = 0;
+  let lastWeek = "";
+
+  for (const p of periodsInMonth(monthKey)) {
+    const weekId = p.id.slice(0, -3);
+    if (weekId !== lastWeek) {
+      lastWeek = weekId;
+      weekIndex += 1;
+    }
+    // Only the part of the block that falls inside this month counts.
+    const days: Date[] = [];
+    for (let d = new Date(p.start); d <= p.end; d = new Date(d.getTime() + 86400000)) {
+      if (monthKeyOf(d) === monthKey) days.push(new Date(d));
+    }
+    if (!days.length) continue;
+
+    const planned = days.reduce((s, d) => s + plannedForDay(data.budgets, d), 0);
+    const daySet = new Set(days.map(toISODate));
+    const spent = data.expenses
+      .filter((e) => daySet.has(e.date))
+      .reduce((s, e) => s + e.amount, 0);
+
+    const lastDay = days[days.length - 1]!;
+    const firstDay = days[0]!;
+    const state: ProgressCell["state"] =
+      lastDay < t ? "past" : firstDay > t ? "future" : "current";
+
+    if (state === "past") {
+      settledPlanned += planned;
+      settledSpent += spent;
+    }
+
+    cells.push({
+      id: p.id,
+      label: `W${weekIndex}${p.type === "weekday" ? " · Mon–Fri" : " · Sat–Sun"}`,
+      type: p.type,
+      planned,
+      spent,
+      state,
+    });
+  }
+
+  return {
+    cells,
+    settledPlanned,
+    settledSpent,
+    result: settledPlanned - settledSpent,
+    hasSettled: settledPlanned > 0 || settledSpent > 0,
+  };
+}
+
 export function relativeDay(dateISO: string, today = new Date()): string {
   const d = fromISODate(dateISO);
   const t = new Date(today.getFullYear(), today.getMonth(), today.getDate());
