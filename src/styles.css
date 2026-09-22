@@ -51,7 +51,7 @@
 }
 
 :root {
-  --app-height: 100vh;
+  --app-height: 100dvh;
   --radius: 1rem;
   --background: oklch(0.145 0.004 285);
   --foreground: oklch(0.955 0.006 90);
