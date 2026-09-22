@@ -7,6 +7,7 @@ import { budgetOn } from "@/lib/calc";
 import { toISODate } from "@/lib/periods";
 import { formatMoney } from "@/lib/format";
 import { CategoryIcon } from "@/components/CategoryIcon";
+import { ThemePicker } from "@/components/ThemePicker";
 import type { AppData } from "@/lib/types";
 
 export const Route = createFileRoute("/settings")({
@@ -106,6 +107,11 @@ function Settings() {
         <Field label="Currency">
           <span className="text-[14px] text-mut">{currency} · Indian rupee</span>
         </Field>
+      </div>
+
+      <p className="label-mono mt-7 text-mut">Appearance</p>
+      <div className="mt-3 rounded-2xl bg-card p-4 ring-1 ring-hair">
+        <ThemePicker />
       </div>
 
       <p className="label-mono mt-7 text-mut">Budget</p>
