@@ -1,9 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useStore } from "@/lib/store";
-import { currentPeriods, relativeDay, summarizeMonth } from "@/lib/calc";
+import { currentPeriods, monthProgress, relativeDay, summarizeMonth } from "@/lib/calc";
 import { fromISODate, monthKeyOf, monthLabel, periodTypeForDate } from "@/lib/periods";
 import { formatMoney } from "@/lib/format";
-import { Gauge } from "@/components/Gauge";
+import { MonthProgress } from "@/components/MonthProgress";
 import { PeriodCard } from "@/components/PeriodCard";
 import { CategoryIcon } from "@/components/CategoryIcon";
 import { cn } from "@/lib/utils";
@@ -32,12 +32,13 @@ function Home() {
   const now = new Date();
   const monthKey = monthKeyOf(now);
   const month = summarizeMonth(data, monthKey);
+  const progress = monthProgress(data, monthKey, now);
   const { weekday, weekend, activeType } = currentPeriods(data, now);
   const recent = [...data.expenses]
     .sort((a, b) => b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt))
     .slice(0, 4);
-  const hasSpending = month.spent > 0;
-  const saved = month.result >= 0;
+  const hasSpending = progress.hasSettled;
+  const saved = progress.result >= 0;
 
   return (
     <div>
