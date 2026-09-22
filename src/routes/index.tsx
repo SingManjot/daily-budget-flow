@@ -62,7 +62,7 @@ function Home() {
               <span
                 className={cn("font-mono text-[26px] leading-none", saved ? "text-brasshi" : "text-over")}
               >
-                {formatMoney(month.result, currency)}
+                {formatMoney(progress.result, currency)}
               </span>
               <span
                 className={cn(
@@ -74,8 +74,8 @@ function Home() {
               </span>
             </div>
             <p className="anim-rise mt-3 text-[13px] text-mut">
-              {formatMoney(month.spent, currency)} spent of {formatMoney(month.planned, currency)}{" "}
-              planned
+              {formatMoney(month.spent, currency)} spent so far · {formatMoney(month.planned, currency)}{" "}
+              planned for {monthLabel(monthKey, false)}
             </p>
           </>
         ) : (
@@ -84,14 +84,15 @@ function Home() {
               Let&apos;s see how you do this month.
             </h1>
             <p className="anim-rise mt-3 text-[13px] text-mut">
-              {formatMoney(0, currency)} spent of {formatMoney(month.planned, currency)} planned
+              {formatMoney(month.spent, currency)} spent so far · savings appear when this
+              week&apos;s blocks close
             </p>
           </>
         )}
       </section>
 
       <section className="mt-6 px-6">
-        <Gauge ratio={month.planned > 0 ? month.spent / month.planned : 0} />
+        <MonthProgress progress={progress} currency={currency} />
       </section>
 
       <section className="mt-6 space-y-3 px-6">
