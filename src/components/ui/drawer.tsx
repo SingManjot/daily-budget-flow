@@ -33,7 +33,17 @@ const DrawerContent = React.forwardRef<
   React.ElementRef<typeof DrawerPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof DrawerPrimitive.Content>
 >(({ className, children, ...props }, ref) => {
+  const contentRef = React.useRef<React.ElementRef<typeof DrawerPrimitive.Content>>(null);
   const scrollAreaRef = React.useRef<HTMLDivElement>(null);
+
+  const setContentRef = React.useCallback(
+    (node: React.ElementRef<typeof DrawerPrimitive.Content> | null) => {
+      contentRef.current = node;
+      if (typeof ref === "function") ref(node);
+      else if (ref) ref.current = node;
+    },
+    [ref],
+  );
 
   React.useEffect(() => {
     const viewport = window.visualViewport;
@@ -48,6 +58,7 @@ const DrawerContent = React.forwardRef<
       // Restore the fully expanded sheet once the viewport becomes tall again.
       if (heightChange > 80) {
         window.requestAnimationFrame(() => {
+          if (contentRef.current) contentRef.current.style.height = "auto";
           scrollAreaRef.current?.scrollTo({ top: 0, behavior: "smooth" });
         });
       }
@@ -61,7 +72,7 @@ const DrawerContent = React.forwardRef<
     <DrawerPortal>
       <DrawerOverlay />
       <DrawerPrimitive.Content
-        ref={ref}
+        ref={setContentRef}
         className={cn(
           "fixed inset-x-0 bottom-0 z-50 mt-24 flex max-h-[92dvh] flex-col overflow-hidden rounded-t-[10px] border bg-background",
           className,
