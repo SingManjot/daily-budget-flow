@@ -14,7 +14,11 @@ dist-ssr
 .vinxi
 .tanstack/**
 .nitro
+android/
+*.apk
+*.aab
 *.local
+.venv
 
 # Wrangler / Cloudflare
 .wrangler/
