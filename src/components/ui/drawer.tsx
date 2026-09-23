@@ -32,27 +32,66 @@ DrawerOverlay.displayName = DrawerPrimitive.Overlay.displayName;
 const DrawerContent = React.forwardRef<
   React.ElementRef<typeof DrawerPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof DrawerPrimitive.Content>
->(({ className, children, ...props }, ref) => (
-  <DrawerPortal>
-    <DrawerOverlay />
-    <DrawerPrimitive.Content
-      ref={ref}
-      className={cn(
-        "fixed inset-x-0 bottom-0 z-50 mt-24 flex max-h-[92dvh] flex-col overflow-hidden rounded-t-[10px] border bg-background",
-        className,
-      )}
-      {...props}
-    >
-      <div className="mx-auto mt-4 h-2 w-[100px] shrink-0 rounded-full bg-muted" />
-      <div
-        data-vaul-no-drag
-        className="min-h-0 flex-1 overflow-y-auto overscroll-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+>(({ className, children, ...props }, ref) => {
+  const contentRef = React.useRef<React.ElementRef<typeof DrawerPrimitive.Content>>(null);
+  const scrollAreaRef = React.useRef<HTMLDivElement>(null);
+
+  const setContentRef = React.useCallback(
+    (node: React.ElementRef<typeof DrawerPrimitive.Content> | null) => {
+      contentRef.current = node;
+      if (typeof ref === "function") ref(node);
+      else if (ref) ref.current = node;
+    },
+    [ref],
+  );
+
+  React.useEffect(() => {
+    const viewport = window.visualViewport;
+    if (!viewport) return;
+
+    let previousHeight = viewport.height;
+    const handleResize = () => {
+      const heightChange = viewport.height - previousHeight;
+      previousHeight = viewport.height;
+
+      // Android keeps the drawer's old scroll offset after the keyboard closes.
+      // Restore the fully expanded sheet once the viewport becomes tall again.
+      if (heightChange > 80) {
+        window.requestAnimationFrame(() => {
+          if (contentRef.current) contentRef.current.style.height = "auto";
+          scrollAreaRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+        });
+      }
+    };
+
+    viewport.addEventListener("resize", handleResize);
+    return () => viewport.removeEventListener("resize", handleResize);
+  }, []);
+
+  return (
+    <DrawerPortal>
+      <DrawerOverlay />
+      <DrawerPrimitive.Content
+        ref={setContentRef}
+        className={cn(
+          "fixed inset-x-0 bottom-0 z-50 mt-24 flex max-h-[92dvh] flex-col overflow-hidden rounded-t-[10px] border bg-background",
+          className,
+        )}
+        {...props}
       >
-        {children}
-      </div>
-    </DrawerPrimitive.Content>
-  </DrawerPortal>
-));
+        <div className="mx-auto mt-4 h-2 w-[100px] shrink-0 rounded-full bg-muted" />
+        <div
+          ref={scrollAreaRef}
+          data-drawer-scroll-area
+          data-vaul-no-drag
+          className="min-h-0 flex-auto overflow-y-auto overscroll-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        >
+          {children}
+        </div>
+      </DrawerPrimitive.Content>
+    </DrawerPortal>
+  );
+});
 DrawerContent.displayName = "DrawerContent";
 
 const DrawerHeader = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
