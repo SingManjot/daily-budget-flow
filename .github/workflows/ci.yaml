@@ -146,6 +146,15 @@ jobs:
           name: daily-budget-flow-${{ steps.version.outputs.version_name }}-release-apk
           path: android/app/build/outputs/apk/release/app-release.apk
 
+      - name: Create GitHub release with APK
+        if: ${{ inputs.build-mode == 'release' && hashFiles('android/app/build/outputs/apk/release/app-release.apk') != '' }}
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.version.outputs.version_name }}
+          files: android/app/build/outputs/apk/release/app-release.apk
+          draft: false
+          generate_release_notes: true
+
       - name: Skip artifact upload for check build
         if: ${{ inputs.build-mode == 'check' }}
         run: 'echo "Check build only: no APK artifact uploaded."'
