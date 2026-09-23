@@ -163,6 +163,12 @@ export function AddExpenseSheet({
           <input
             value={note}
             onChange={(e) => setNote(e.target.value)}
+            onFocus={(e) => {
+              const input = e.currentTarget;
+              window.requestAnimationFrame(() => {
+                input.scrollIntoView({ block: "center", behavior: "smooth" });
+              });
+            }}
             placeholder="Note (optional)"
             className="mt-4 w-full rounded-xl bg-card px-3 py-3 text-[13px] text-foreground ring-1 ring-hair outline-none placeholder:text-mut/70"
           />
