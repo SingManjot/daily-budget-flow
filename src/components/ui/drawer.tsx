@@ -73,7 +73,7 @@ const DrawerContent = React.forwardRef<
           ref={scrollAreaRef}
           data-drawer-scroll-area
           data-vaul-no-drag
-          className="min-h-0 flex-1 overflow-y-auto overscroll-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          className="min-h-0 flex-auto overflow-y-auto overscroll-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         >
           {children}
         </div>
