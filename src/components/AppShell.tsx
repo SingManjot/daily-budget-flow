@@ -18,7 +18,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
   return (
-    <div className="mx-auto flex min-h-[var(--app-height)] w-full max-w-[420px] flex-col">
+    <div className="mx-auto flex min-h-[var(--app-height)] w-full max-w-[420px] flex-col pt-[env(safe-area-inset-top)]">
       <main className="flex-1 pb-4">{children}</main>
 
       <div className="sticky bottom-0 z-20 bg-gradient-to-t from-background via-background to-transparent">
