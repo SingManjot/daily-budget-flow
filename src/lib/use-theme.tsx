@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
 import { applyTheme, loadTheme, saveTheme, DEFAULT_THEME, type ThemeId } from "@/lib/theme";
+import { syncStatusBar } from "@/lib/native";
 
 type ThemeContextValue = {
   theme: ThemeId;
@@ -18,12 +19,14 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     const t = loadTheme();
     setThemeState(t);
     applyTheme(t);
+    syncStatusBar(t);
   }, []);
 
   const setTheme = useCallback((id: ThemeId) => {
     setThemeState(id);
     applyTheme(id);
     saveTheme(id);
+    syncStatusBar(id);
   }, []);
 
   return <ThemeContext.Provider value={{ theme, setTheme }}>{children}</ThemeContext.Provider>;

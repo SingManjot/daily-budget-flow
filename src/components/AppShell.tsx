@@ -3,6 +3,7 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import { AddExpenseSheet } from "@/components/AddExpenseSheet";
 import { AddMoneySheet } from "@/components/AddMoneySheet";
 import { cn } from "@/lib/utils";
+import { hapticTap } from "@/lib/native";
 
 const TABS = [
   { to: "/", label: "Home" },
@@ -23,13 +24,19 @@ export function AppShell({ children }: { children: ReactNode }) {
       <div className="sticky bottom-0 z-20 bg-gradient-to-t from-background via-background to-transparent">
         <div className="flex gap-3 px-6 pb-3 pt-4">
           <button
-            onClick={() => setExpenseOpen(true)}
+            onClick={() => {
+              hapticTap();
+              setExpenseOpen(true);
+            }}
             className="h-12 flex-1 rounded-xl bg-brass text-[14px] font-semibold text-background ring-1 ring-brasshi/40 transition active:bg-brasshi"
           >
             + Expense
           </button>
           <button
-            onClick={() => setMoneyOpen(true)}
+            onClick={() => {
+              hapticTap();
+              setMoneyOpen(true);
+            }}
             className="h-12 rounded-xl bg-card px-5 text-[13px] font-medium text-foreground/80 ring-1 ring-hair transition active:bg-accent"
           >
             + Money
