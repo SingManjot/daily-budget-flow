@@ -5,6 +5,7 @@ import { AmountField } from "@/components/AmountField";
 import { useStore } from "@/lib/store";
 import { fromISODate, periodTypeForDate, toISODate } from "@/lib/periods";
 import type { PeriodType } from "@/lib/types";
+import { hapticSuccess } from "@/lib/native";
 
 
 export function AddMoneySheet({
@@ -35,6 +36,7 @@ export function AddMoneySheet({
     }
     addMoney({ amount: value, periodType, date, note });
     toast.success("Extra money added");
+    hapticSuccess();
     onOpenChange(false);
   };
 

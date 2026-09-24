@@ -16,6 +16,7 @@ import { ThemeProvider } from "@/lib/use-theme";
 import { AppShell } from "@/components/AppShell";
 import { Onboarding } from "@/components/Onboarding";
 import { Toaster } from "@/components/ui/sonner";
+import { initNative } from "@/lib/native";
 
 function NotFoundComponent() {
   return (
@@ -154,6 +155,10 @@ function AppGate() {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+
+  useEffect(() => {
+    initNative();
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>

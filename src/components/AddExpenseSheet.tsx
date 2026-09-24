@@ -8,6 +8,7 @@ import { useStore } from "@/lib/store";
 import { dateForPeriod, fromISODate, periodTypeForDate, toISODate } from "@/lib/periods";
 import type { Expense, PeriodType } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { hapticSuccess } from "@/lib/native";
 
 export function AddExpenseSheet({
   open,
@@ -74,6 +75,7 @@ export function AddExpenseSheet({
       addExpense({ amount: value, categoryId, date, periodType, note });
       toast.success("Expense added");
     }
+    hapticSuccess();
     onOpenChange(false);
   };
 
