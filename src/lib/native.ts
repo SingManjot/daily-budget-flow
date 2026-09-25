@@ -22,7 +22,8 @@ const LIGHT_THEMES: ThemeId[] = ["blush", "sand"];
 export async function syncStatusBar(theme: ThemeId) {
   if (!isNative()) return;
   try {
-    await StatusBar.setOverlaysWebView({ overlay: false });
+    await StatusBar.hide();
+    await StatusBar.setOverlaysWebView({ overlay: true });
     await StatusBar.setBackgroundColor({ color: STATUS_BAR_COLORS[theme] });
     await StatusBar.setStyle({
       style: LIGHT_THEMES.includes(theme) ? Style.Light : Style.Dark,
