@@ -35,12 +35,33 @@ export async function syncStatusBar(theme: ThemeId) {
 
 /** One-time native setup: keyboard accessory bar off, resize handled by webview. */
 export async function initNative() {
-  if (!isNative()) return;
+  if (!isNative() || typeof window === "undefined") return;
+
   try {
     await Keyboard.setAccessoryBarVisible({ isVisible: false });
   } catch {
     /* plugin unavailable */
   }
+
+  const hideStatusBarAfterScroll = () => {
+    const timeoutId = (globalThis as typeof globalThis & {
+      __dailyBudgetFlowStatusBarTimer?: number;
+    }).__dailyBudgetFlowStatusBarTimer;
+
+    if (timeoutId) {
+      window.clearTimeout(timeoutId);
+    }
+
+    (globalThis as typeof globalThis & {
+      __dailyBudgetFlowStatusBarTimer?: number;
+    }).__dailyBudgetFlowStatusBarTimer = window.setTimeout(() => {
+      StatusBar.hide().catch(() => {});
+    }, 180);
+  };
+
+  window.addEventListener("scroll", hideStatusBarAfterScroll, { passive: true });
+  window.addEventListener("touchmove", hideStatusBarAfterScroll, { passive: true });
+  hideStatusBarAfterScroll();
 }
 
 /** Light tap feedback for primary actions. No-op on web. */
