@@ -132,5 +132,7 @@ npm run android:sync
 npm run android:open
 ```
 
-Bank SMS import (Android only) lives in `plugins/sms-capture` and `src/lib/sms`. See
-`CLAUDE.md` for how it works and the security rules it follows.
+Bank SMS import (Android only) lives in `plugins/sms-capture` and `src/lib/sms`. It is
+switched off for now (see `src/lib/sms/config.ts`) because Play Protect blocks sideloaded
+apps that read SMS; it will be enabled for a Google Play release. See `CLAUDE.md` for how it
+works and the security rules it follows.

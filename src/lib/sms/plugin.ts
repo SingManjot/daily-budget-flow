@@ -1,5 +1,6 @@
 import { Capacitor, registerPlugin, type PluginListenerHandle } from "@capacitor/core";
 import type { RawSms } from "./parser";
+import { SMS_IMPORT_ENABLED } from "./config";
 
 /**
  * Bridge to the native plugin in plugins/sms-capture (Android only).
@@ -20,7 +21,11 @@ type PermissionState = "granted" | "denied" | "prompt" | "prompt-with-rationale"
 const SmsCapture = registerPlugin<SmsCapturePlugin>("SmsCapture");
 
 export function smsSupported(): boolean {
-  return Capacitor.getPlatform() === "android" && Capacitor.isPluginAvailable("SmsCapture");
+  return (
+    SMS_IMPORT_ENABLED &&
+    Capacitor.getPlatform() === "android" &&
+    Capacitor.isPluginAvailable("SmsCapture")
+  );
 }
 
 export async function smsPermission(): Promise<PermissionState> {
