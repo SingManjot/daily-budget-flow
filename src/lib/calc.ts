@@ -1,10 +1,4 @@
-import type {
-  AppData,
-  BudgetSettings,
-  Expense,
-  MoneyAddition,
-  PeriodType,
-} from "./types";
+import type { AppData, BudgetSettings, Expense, MoneyAddition, PeriodType } from "./types";
 import {
   daysOfMonth,
   fromISODate,
@@ -50,11 +44,7 @@ export interface PeriodSummary {
   isCurrent: boolean;
 }
 
-export function summarizePeriod(
-  data: AppData,
-  p: PeriodRange,
-  today = new Date(),
-): PeriodSummary {
+export function summarizePeriod(data: AppData, p: PeriodRange, today = new Date()): PeriodSummary {
   const budget = budgetForPeriod(data.budgets, p);
   // Period membership is derived from the date itself, so an entry can never
   // get stranded by a mismatched stored periodType.
@@ -212,11 +202,7 @@ export interface MonthProgress {
  * Month-to-date view: savings only count once a weekday/weekend block has
  * fully finished. Every month restarts at zero on the 1st.
  */
-export function monthProgress(
-  data: AppData,
-  monthKey: string,
-  today = new Date(),
-): MonthProgress {
+export function monthProgress(data: AppData, monthKey: string, today = new Date()): MonthProgress {
   const t = new Date(today.getFullYear(), today.getMonth(), today.getDate());
   const cells: ProgressCell[] = [];
   let settledPlanned = 0;
@@ -239,14 +225,11 @@ export function monthProgress(
 
     const planned = days.reduce((s, d) => s + plannedForDay(data.budgets, d), 0);
     const daySet = new Set(days.map(toISODate));
-    const spent = data.expenses
-      .filter((e) => daySet.has(e.date))
-      .reduce((s, e) => s + e.amount, 0);
+    const spent = data.expenses.filter((e) => daySet.has(e.date)).reduce((s, e) => s + e.amount, 0);
 
     const lastDay = days[days.length - 1]!;
     const firstDay = days[0]!;
-    const state: ProgressCell["state"] =
-      lastDay < t ? "past" : firstDay > t ? "future" : "current";
+    const state: ProgressCell["state"] = lastDay < t ? "past" : firstDay > t ? "future" : "current";
 
     if (state === "past") {
       settledPlanned += planned;

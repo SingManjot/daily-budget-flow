@@ -44,17 +44,21 @@ export async function initNative() {
   }
 
   const hideStatusBarAfterScroll = () => {
-    const timeoutId = (globalThis as typeof globalThis & {
-      __dailyBudgetFlowStatusBarTimer?: number;
-    }).__dailyBudgetFlowStatusBarTimer;
+    const timeoutId = (
+      globalThis as typeof globalThis & {
+        __dailyBudgetFlowStatusBarTimer?: number;
+      }
+    ).__dailyBudgetFlowStatusBarTimer;
 
     if (timeoutId) {
       window.clearTimeout(timeoutId);
     }
 
-    (globalThis as typeof globalThis & {
-      __dailyBudgetFlowStatusBarTimer?: number;
-    }).__dailyBudgetFlowStatusBarTimer = window.setTimeout(() => {
+    (
+      globalThis as typeof globalThis & {
+        __dailyBudgetFlowStatusBarTimer?: number;
+      }
+    ).__dailyBudgetFlowStatusBarTimer = window.setTimeout(() => {
       StatusBar.hide().catch(() => {});
     }, 180);
   };
