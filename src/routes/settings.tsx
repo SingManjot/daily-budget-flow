@@ -9,6 +9,7 @@ import { formatMoney } from "@/lib/format";
 import { CategoryBadge } from "@/components/CategoryIcon";
 import { ThemePicker } from "@/components/ThemePicker";
 import { SmsImportSettings } from "@/components/SmsImportSettings";
+import { SMS_IMPORT_ENABLED } from "@/lib/sms/config";
 import type { AppData } from "@/lib/types";
 
 export const Route = createFileRoute("/settings")({
@@ -194,8 +195,12 @@ function Settings() {
         </div>
       </div>
 
-      <p className="label-section mt-8 pl-1 text-mut">SMS Import</p>
-      <SmsImportSettings />
+      {SMS_IMPORT_ENABLED && (
+        <>
+          <p className="label-section mt-8 pl-1 text-mut">SMS Import</p>
+          <SmsImportSettings />
+        </>
+      )}
 
       <p className="label-section mt-8 pl-1 text-mut">Data</p>
       <div className="mt-3 space-y-2 rounded-2xl bg-card p-4 ring-1 ring-hair">

@@ -86,6 +86,14 @@ plugins/sms-capture/  Local Capacitor plugin (Java), linked via "file:" dependen
 
 ## Bank SMS import
 
+> **Currently switched off.** `SMS_IMPORT_ENABLED` in `src/lib/sms/config.ts` is `false`, and
+> `capacitor-sms-capture` is not in `package.json`, so the APK requests no SMS permissions.
+> Reason: Play Protect's enhanced fraud protection blocks sideloaded apps that request
+> SMS/notification-listener/accessibility access. The plan is to ship through Google Play
+> (internal testing first) with the "SMS-based money management" declaration, then re-enable:
+> set the flag to `true` and `npm install --save capacitor-sms-capture@file:plugins/sms-capture`.
+> The code, tests and native plugin are kept and maintained in the meantime.
+
 - **Why a local plugin:** CI runs `npx cap add android` fresh each build and `android/` is
   gitignored, so native code can't live there. `plugins/sms-capture` is an npm package with
   `capacitor.android.src`; `cap sync` merges its manifest (RECEIVE_SMS, READ_SMS, receiver).
