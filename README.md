@@ -38,10 +38,11 @@ The current storage key is `spend-tracker:v1`.
 ## Current stack
 
 - React + TypeScript
-- Vite
+- Vite + TanStack Start (static prerender, no server)
 - TanStack Router
 - Tailwind CSS
 - date-fns
+- Capacitor (Android)
 - localStorage persistence
 
 ## Getting started
@@ -58,10 +59,16 @@ Start the app in development mode:
 npm run dev
 ```
 
-Build for production:
+Build for production (static files in `dist/client`, deployable to any static host):
 
 ```bash
 npm run build
+```
+
+Run the tests:
+
+```bash
+npm test
 ```
 
 ## Project structure
@@ -111,23 +118,19 @@ This is intentionally local-first so future work can add cloud sync or account s
 
 This project is for local personal use and is not currently published as a package or library.
 
-This project was built with [Lovable](https://lovable.dev).
+## Android app
 
-## Build with Lovable
+The web build is wrapped with Capacitor. The `Android APK` GitHub Actions workflow
+(`.github/workflows/ci.yaml`, run manually) builds a debug APK or a signed release APK.
+Locally, with the Android SDK installed:
 
-Continue developing this project in the [Lovable editor](https://lovable.dev/projects/dbfe15de-39e3-4f6d-b10d-963938fc8d31).
-
-- **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: every change made in Lovable is committed straight to this repository.
-- **Full ownership**: this code is yours. Push to `main` on GitHub and your changes sync back into Lovable, ready for your next prompt.
-
-## Development
-
-Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
-
-```sh
-git clone <this-repository-url>
-cd <repository-name>
-npm i
-npm run dev
+```bash
+npm run android:sync
 ```
+
+```bash
+npm run android:open
+```
+
+Bank SMS import (Android only) lives in `plugins/sms-capture` and `src/lib/sms`. See
+`CLAUDE.md` for how it works and the security rules it follows.

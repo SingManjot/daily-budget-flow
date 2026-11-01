@@ -1,5 +1,3 @@
-@AGENTS.md
-
 # Daily Budget Flow (Spend Tracker): project context
 
 Context for future coding sessions. Read this before changing anything.
@@ -14,24 +12,26 @@ The currency is hard-coded to ₹ with `en-IN` number formatting.
 
 ## Constraints you must respect
 
-- **Lovable-synced repo** (see AGENTS.md). Never force-push or rewrite pushed history. Every
-  pushed commit syncs to the Lovable editor, so keep the branch building.
-- `vite.config.ts` uses `@lovable.dev/vite-tanstack-config`, which already bundles React,
-  Tailwind, tsconfig paths, TanStack Start and nitro. **Do not add those plugins again.**
+- The project used to be built with Lovable. It no longer is, and all Lovable tooling has
+  been removed. Don't reintroduce `@lovable.dev/*` packages or Lovable-specific files.
+- Don't rewrite pushed history (no force-push or amending pushed commits).
 - `src/routeTree.gen.ts` is generated, so don't edit it. Routes are file-based (see
   `src/routes/README.md`). Keep `<Outlet />` in `__root.tsx`.
-- `src/components/ui/*` are shadcn/ui primitives. Most are unused. Only `drawer`, `sonner`
-  and a few others matter. Edit them with care.
+- `src/components/ui/*` are shadcn/ui primitives. Most are unused. Only `drawer`, `sonner`,
+  `switch` and a few others matter. Edit them with care.
 
 ## Stack
 
-React 19 · TypeScript · TanStack Start/Router (SSR + prerender of `/`, `/history`,
-`/overview`, `/settings`) · Vite 8 · Tailwind CSS v4 (CSS-first config in `src/styles.css`)
+React 19 · TypeScript · TanStack Start/Router (static prerender, no server) · Vite 8 · Tailwind CSS v4 (CSS-first config in `src/styles.css`)
 · date-fns · recharts · vaul (bottom sheets) · sonner (toasts) · lucide-react icons ·
 Capacitor 8 (status bar, haptics, keyboard).
 
-Commands: `npm run dev`, `npm run build` (output in `.output/public`, which is Capacitor's
-`webDir`), `npm run lint`, `npx tsc --noEmit`, `npm test`, `npm run android:sync`.
+Build: `vite.config.ts` is a plain Vite config (Tailwind, TanStack Start with prerender, React).
+There is no runtime server: `npm run build` prerenders `/`, `/history`, `/overview` and
+`/settings` into `dist/client`, which is both the static web deploy folder and Capacitor's
+`webDir`. `/month/$month` is rendered client-side. `dist/server` is only used during the build.
+
+Commands: `npm run dev` (port 8080), `npm run build`, `npm run lint`, `npx tsc --noEmit`, `npm test`, `npm run android:sync`.
 `npm test` runs `src/**/*.test.ts` with Node's built-in runner (`--experimental-strip-types`,
 no extra deps). Test files and the modules they import must use explicit `.ts` relative imports
 and only `import type` from `@/` paths.
@@ -173,7 +173,7 @@ need to cite the HIG.
 
 ## Known gaps / ideas
 
-- ~17 pre-existing prettier lint errors remain in files the refresh didn't touch.
+- `npm run lint` is clean apart from react-refresh warnings in shadcn files and store.tsx.
 - Only the SMS parser/ingest have tests. calc.ts is pure and would be easy to unit test.
 - `Gauge.tsx` and most shadcn ui components are unused.
 - Currency is fixed to ₹ (`completeOnboarding` hard-codes it).

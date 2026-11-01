@@ -1,19 +1,30 @@
-// @lovable.dev/vite-tanstack-config already includes the following — do NOT add them manually
-// or the app will break with duplicate plugins:
-//   - TanStack devtools (dev-only, first), tanstackStart, viteReact, tailwindcss, tsConfigPaths,
-//     nitro (build-only using cloudflare as a default target), VITE_* env injection, @ path alias,
-//     React/TanStack dedupe, error logger plugins, and sandbox detection (port/host/strictPort).
-// You can pass additional config via defineConfig({ vite: { ... }, etc... }) if needed.
-import { defineConfig } from "@lovable.dev/vite-tanstack-config";
+import { defineConfig } from "vite";
+import tailwindcss from "@tailwindcss/vite";
+import viteReact from "@vitejs/plugin-react";
+import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 
+/**
+ * The app is fully client-side (data lives in localStorage), so the build is static:
+ * TanStack Start prerenders the routes into dist/client, which is both the web deploy
+ * folder and Capacitor's webDir. There is no runtime server.
+ */
 export default defineConfig({
-  tanstackStart: {
-    // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
-    // nitro/vite builds from this
-    server: { entry: "server" },
-    prerender: {
-      enabled: true,
-      crawlLinks: true,
-    },
+  server: { port: 8080 },
+  resolve: {
+    // "@/..." imports, read from tsconfig.json "paths".
+    tsconfigPaths: true,
+    dedupe: ["react", "react-dom"],
   },
+  plugins: [
+    tailwindcss(),
+    tanstackStart({
+      prerender: { enabled: true, crawlLinks: true },
+      // Nothing under a server/ folder may end up in the client bundle.
+      importProtection: {
+        behavior: "error",
+        client: { files: ["**/server/**"], specifiers: ["server-only"] },
+      },
+    }),
+    viteReact(),
+  ],
 });
