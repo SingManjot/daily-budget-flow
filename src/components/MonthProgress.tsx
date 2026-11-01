@@ -15,16 +15,13 @@ export function MonthProgress({
   currency: string;
 }) {
   const { cells } = progress;
-  const max = Math.max(
-    1,
-    ...cells.map((c) => Math.max(c.planned, c.spent)),
-  );
+  const max = Math.max(1, ...cells.map((c) => Math.max(c.planned, c.spent)));
 
   return (
     <div className="rounded-2xl bg-card p-4 ring-1 ring-hair">
       <div className="flex items-baseline justify-between">
-        <p className="label-mono text-mut">Month so far</p>
-        <p className="font-mono text-[11px] text-mut">
+        <p className="label-section text-mut">Month so far</p>
+        <p className="text-[13px] font-medium text-mut">
           {formatMoney(progress.settledSpent, currency)} /{" "}
           {formatMoney(progress.settledPlanned, currency)} closed
         </p>
@@ -55,9 +52,7 @@ export function MonthProgress({
                   )}
                   style={{
                     height: `${
-                      Math.max(plan, fill, 8) > 0
-                        ? (fill / Math.max(plan, fill, 8)) * 100
-                        : 0
+                      Math.max(plan, fill, 8) > 0 ? (fill / Math.max(plan, fill, 8)) * 100 : 0
                     }%`,
                     animationDelay: `${i * 60}ms`,
                   }}
@@ -65,7 +60,7 @@ export function MonthProgress({
               </div>
               <span
                 className={cn(
-                  "mt-1.5 text-center font-mono text-[9px]",
+                  "mt-1.5 text-center text-[13px]",
                   c.state === "current" ? "text-brasshi" : "text-mut",
                 )}
               >
@@ -77,15 +72,10 @@ export function MonthProgress({
       </div>
 
       <div className="mt-3 flex items-center justify-between border-t border-hair pt-3">
-        <span className="text-[11px] text-mut">
+        <span className="text-[12px] text-mut">
           {cells.filter((c) => c.state === "past").length} of {cells.length} blocks closed
         </span>
-        <span
-          className={cn(
-            "text-[12px]",
-            progress.result >= 0 ? "text-brasshi" : "text-over",
-          )}
-        >
+        <span className={cn("text-[12px]", progress.result >= 0 ? "text-brasshi" : "text-over")}>
           {progress.result >= 0 ? "+" : ""}
           {formatMoney(progress.result, currency)} banked
         </span>

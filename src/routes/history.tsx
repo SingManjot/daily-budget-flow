@@ -6,8 +6,9 @@ import { useStore } from "@/lib/store";
 import { historyTrend, monthsWithData, relativeDay, summarizeMonth } from "@/lib/calc";
 import { fromISODate, monthLabel, periodTypeForDate } from "@/lib/periods";
 import { formatCompact, formatMoney } from "@/lib/format";
-import { CategoryIcon } from "@/components/CategoryIcon";
+import { CategoryBadge } from "@/components/CategoryIcon";
 import { AddExpenseSheet } from "@/components/AddExpenseSheet";
+import { Segmented } from "@/components/Segmented";
 import type { Expense } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -43,25 +44,17 @@ function History() {
     .slice(0, 20);
 
   return (
-    <div className="px-6 pb-4 pt-8">
-      <h1 className="text-[22px] font-medium">History</h1>
+    <div className="px-5 pb-4 pt-8">
+      <h1 className="title-large">History</h1>
 
-      <div className="mt-5 flex items-center justify-between">
-        <p className="label-mono text-mut">Monthly trend</p>
-        <div className="flex gap-1 rounded-full bg-card p-1 ring-1 ring-hair">
-          {[3, 6, 12].map((m) => (
-            <button
-              key={m}
-              onClick={() => setRange(m)}
-              className={cn(
-                "rounded-full px-2.5 py-1 font-mono text-[10px] transition-colors",
-                range === m ? "bg-brass/15 text-brasshi" : "text-mut",
-              )}
-            >
-              {m}M
-            </button>
-          ))}
-        </div>
+      <div className="mt-6 flex items-center justify-between pl-1">
+        <p className="label-section text-mut">Monthly trend</p>
+        <Segmented
+          label="Trend range"
+          value={range}
+          onChange={setRange}
+          options={[3, 6, 12].map((m) => ({ value: m, label: `${m}M` }))}
+        />
       </div>
 
       {trend.length > 1 ? (
@@ -99,14 +92,14 @@ function History() {
         </div>
       ) : (
         <div className="mt-3 rounded-2xl bg-card px-4 py-8 text-center ring-1 ring-hair">
-          <p className="text-[14px]">Your spending history will appear here.</p>
+          <p className="text-[15px]">Your spending history will appear here.</p>
           <p className="mt-1 text-[12px] text-mut">
             The trend shows up once you have more than one month of data.
           </p>
         </div>
       )}
 
-      <p className="label-mono mt-8 text-mut">Past months</p>
+      <p className="label-section mt-8 pl-1 text-mut">Past months</p>
       <div className="mt-3 space-y-2.5">
         {months.map((k) => {
           const s = summarizeMonth(data, k);
@@ -119,10 +112,10 @@ function History() {
               className="block rounded-2xl bg-card p-4 ring-1 ring-hair transition active:bg-accent"
             >
               <div className="flex items-baseline justify-between gap-2">
-                <span className="truncate text-[14px] font-medium">{monthLabel(k)}</span>
+                <span className="truncate text-[15px] font-medium">{monthLabel(k)}</span>
                 <span
                   className={cn(
-                    "shrink-0 font-mono text-[12px]",
+                    "shrink-0 text-[13px] font-medium",
                     saved ? "text-brasshi" : "text-over",
                   )}
                 >
@@ -138,10 +131,10 @@ function History() {
         })}
       </div>
 
-      <p className="label-mono mt-8 text-mut">Recent transactions</p>
+      <p className="label-section mt-8 pl-1 text-mut">Recent transactions</p>
       {recent.length === 0 ? (
         <div className="mt-3 rounded-2xl bg-card px-4 py-8 text-center ring-1 ring-hair">
-          <p className="text-[14px]">No spending yet</p>
+          <p className="text-[15px]">No spending yet</p>
           <p className="mt-1 text-[12px] text-mut">
             Add your first expense to start tracking this month.
           </p>
@@ -152,31 +145,31 @@ function History() {
             const cat = data.categories.find((c) => c.id === e.categoryId);
             return (
               <div key={e.id} className="flex items-center gap-3 px-4 py-3">
-                <CategoryIcon icon={cat?.icon} className="size-4 shrink-0 text-mut" />
+                <CategoryBadge icon={cat?.icon} />
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-[14px]">{e.note || cat?.name || "Expense"}</p>
-                  <p className="truncate text-[11px] text-mut">
+                  <p className="truncate text-[15px]">{e.note || cat?.name || "Expense"}</p>
+                  <p className="truncate text-[12px] text-mut">
                     {cat?.name} ·{" "}
                     {periodTypeForDate(fromISODate(e.date)) === "weekday" ? "Weekday" : "Weekend"} ·{" "}
                     {relativeDay(e.date)}
                   </p>
                 </div>
-                <span className="shrink-0 text-[14px] font-medium">
+                <span className="shrink-0 text-[15px] font-medium">
                   {formatMoney(e.amount, currency)}
                 </span>
                 <button
                   onClick={() => setEditing(e)}
                   aria-label="Edit expense"
-                  className="shrink-0 p-1 text-mut active:text-brasshi"
+                  className="grid size-10 shrink-0 place-items-center rounded-full text-mut active:bg-accent active:text-brasshi"
                 >
-                  <Pencil className="size-3.5" strokeWidth={1.5} />
+                  <Pencil className="size-[18px]" strokeWidth={1.6} />
                 </button>
                 <button
                   onClick={() => deleteExpense(e.id)}
                   aria-label="Delete expense"
-                  className="shrink-0 p-1 text-mut active:text-over"
+                  className="grid size-10 shrink-0 place-items-center rounded-full text-mut active:bg-accent active:text-over"
                 >
-                  <Trash2 className="size-3.5" strokeWidth={1.5} />
+                  <Trash2 className="size-[18px]" strokeWidth={1.6} />
                 </button>
               </div>
             );

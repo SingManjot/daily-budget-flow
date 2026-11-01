@@ -1,0 +1,138 @@
+@AGENTS.md
+
+# Daily Budget Flow (Spend Tracker): project context
+
+Context for future coding sessions. Read this before changing anything.
+
+## What the app is
+
+A local-first, mobile-first personal spending tracker. It has two separate budgets:
+**weekday** (Mon–Fri) and **weekend** (Sat–Sun). The app answers one question:
+*am I ahead or behind plan this month?* There is no backend and no auth. All data lives in
+`localStorage`. It ships as a web app/PWA and as an Android app via Capacitor.
+The currency is hard-coded to ₹ with `en-IN` number formatting.
+
+## Constraints you must respect
+
+- **Lovable-synced repo** (see AGENTS.md). Never force-push or rewrite pushed history. Every
+  pushed commit syncs to the Lovable editor, so keep the branch building.
+- `vite.config.ts` uses `@lovable.dev/vite-tanstack-config`, which already bundles React,
+  Tailwind, tsconfig paths, TanStack Start and nitro. **Do not add those plugins again.**
+- `src/routeTree.gen.ts` is generated, so don't edit it. Routes are file-based (see
+  `src/routes/README.md`). Keep `<Outlet />` in `__root.tsx`.
+- `src/components/ui/*` are shadcn/ui primitives. Most are unused. Only `drawer`, `sonner`
+  and a few others matter. Edit them with care.
+
+## Stack
+
+React 19 · TypeScript · TanStack Start/Router (SSR + prerender of `/`, `/history`,
+`/overview`, `/settings`) · Vite 8 · Tailwind CSS v4 (CSS-first config in `src/styles.css`)
+· date-fns · recharts · vaul (bottom sheets) · sonner (toasts) · lucide-react icons ·
+Capacitor 8 (status bar, haptics, keyboard).
+
+Commands: `npm run dev`, `npm run build` (output in `.output/public`, which is Capacitor's
+`webDir`), `npm run lint`, `npx tsc --noEmit`, `npm run android:sync`.
+CI (`.github/workflows/ci.yaml`) is a manual `workflow_dispatch` Android APK build
+(check / debug / release). It has no automatic test or lint gate, and there are no tests.
+
+Running the dev server inside a sandbox may need `--host 127.0.0.1` because IPv6 can be
+unavailable there.
+
+## Architecture map
+
+```
+src/
+  routes/
+    __root.tsx        HTML shell, head/meta/fonts, providers: Query → Theme → Store,
+                      AppGate (onboarding gate), Toaster, initNative()
+    index.tsx         Home: greeting, month result hero, MonthProgress, 2 PeriodCards, recent 4
+    history.tsx       Monthly trend chart (3/6/12M), past months → /month/$month, last 20 txns
+                      (edit/delete)
+    overview.tsx      Current month: planned/spent/saved stats, weekday-vs-weekend bars,
+                      weekly trend, category breakdown
+    month.$month.tsx  One month's detail: splits, categories, expandable periods, all txns
+    settings.tsx      Profile name, theme, budgets (with "applies from" date), categories,
+                      export/import JSON, reset
+  components/
+    AppShell.tsx      Floating glass action row (Add Expense / Money) + 4-tab glass tab bar
+    AddExpenseSheet   vaul Drawer for add/edit expense (amount, category, date, period)
+    AddMoneySheet     Drawer to add extra money to a period (does not change the budget)
+    Onboarding.tsx    5 steps: welcome → name → weekday budget → weekend budget → confirm
+    MonthProgress     Bar strip with one column per weekday/weekend block in the month
+    PeriodCard        Spent/budget/remaining card for one block
+    Segmented.tsx     iOS-style segmented control (radiogroup)
+    CategoryIcon.tsx  icon-name → lucide map, plus CategoryBadge (rounded tile for list rows)
+    AmountField, ThemePicker, Gauge (Gauge is currently unused)
+  lib/
+    types.ts          AppData { version, user, budgets[], expenses[], additions[], categories[] }
+    storage.ts        localStorage key `spend-tracker:v1`, emptyData, DEFAULT_CATEGORIES, uid()
+    store.tsx         StoreProvider/useStore: all mutations; each one calls commit(), which
+                      sets state and saves
+    periods.ts        ISO-week based weekday/weekend PeriodRange, month helpers
+    calc.ts           All budget maths (see below)
+    format.ts         formatMoney (₹, en-IN, rounded abs), formatCompact (k / L)
+    theme.ts          6 themes; theme key `spend-tracker:theme`; sets data-theme on <html>
+    use-theme.tsx     ThemeProvider; also syncs the Android status bar
+    native.ts         Capacitor helpers: syncStatusBar, initNative, hapticTap/Success.
+                      All are no-ops on web.
+```
+
+## Domain rules (calc.ts / periods.ts)
+
+- Periods: each ISO week has a `…-WD` block (Mon–Fri) and a `…-WE` block (Sat–Sun).
+  Period ids look like `2026-W44-WD`.
+- An entry's period comes from **its date** (`periodContains`), not from the stored
+  `periodType`.
+- Budgets are versioned by `effectiveFrom` and never retroactive. `budgetOn(date)` picks the
+  latest one whose effectiveFrom ≤ date, and otherwise falls back to the earliest.
+- Per-day planned amount = weekdayBudget/5 or weekendBudget/2. Monthly planned = the sum over
+  the month's days, which handles blocks split across months.
+- `monthProgress`: savings are only "banked" once a block has fully **closed** (it is past).
+  Every month restarts at 0.
+- Additions (extra money) raise a period's `remaining`. They are excluded from the month's
+  `result` (planned − spent).
+- Deleting a category leaves its expenses orphaned. The UI then shows "Other" or a blank
+  category name.
+
+## Design system (after the Apple-HIG refresh)
+
+The refresh was guided by the Apple design skill (https://github.com/dickwu/apple-design-skill),
+which packages Apple's Human Interface Guidelines as reference files. Clone it again if you
+need to cite the HIG.
+
+- **Tokens** live in `src/styles.css` as oklch CSS variables per theme. Components use semantic
+  Tailwind classes: `bg-card`, `text-mut`, `ring-hair`, `bg-brass`, `text-brasshi`,
+  `text-under`, `text-over`. Never hard-code colours in components, except ThemePicker
+  swatches and the `native.ts` status-bar hex values. Keep those two in sync with the themes.
+- Themes: brass (default, no data-theme attribute), carbon, violet, ocean (dark), and blush,
+  sand (light, which get the `.light` class and `color-scheme: light`).
+- **Type:** the system UI stack (SF Pro on Apple devices, Roboto on Android, Inter as the web
+  fallback), 15px body, tabular numbers. Cormorant Garamond italic (`font-display`) is the
+  brand voice, used only for hero words ("saved", "overspent", onboarding headlines).
+  Don't spread it further.
+- **Utilities:** `title-large` (34px iOS large title), `label-section` (12px uppercase
+  section header), `glass` (backdrop blur for the floating functional layer only, never for
+  content), `pressable` (scale on press), `anim-rise`, `anim-settle`, `anim-bar`,
+  `safe-bottom`.
+- **Rules the refresh follows** (keep them):
+  - Touch targets are at least 44px. Icon buttons use `grid size-10 place-items-center`.
+  - No text below 11px.
+  - Inputs are 16px or larger, which stops iOS from zooming on focus.
+  - The tab bar has icons and one-word labels and only navigates. Actions such as Add Expense
+    or Money sit in a separate row above it.
+  - `/month/*` highlights the History tab.
+  - Button and sheet titles use title case ("Add Expense", "Save Changes").
+  - `prefers-reduced-motion`, `prefers-reduced-transparency` and `prefers-contrast: more` are
+    handled at the bottom of styles.css.
+  - Sheets (vaul) have a 36×5 grabber, 28px top radius and safe-area bottom padding.
+- `main` has `pb-40` so content clears the fixed floating bars. Keep that padding if you change
+  the bar height.
+
+## Known gaps / ideas
+
+- ~17 pre-existing prettier lint errors remain in files the refresh didn't touch.
+- No tests. calc.ts is pure and would be easy to unit test.
+- `Gauge.tsx` and most shadcn ui components are unused.
+- Currency is fixed to ₹ (`completeOnboarding` hard-codes it).
+- Import does only minimal validation: it checks that `expenses` exists.
+- README roadmap: sync, recurring expenses, CSV export, richer analytics.

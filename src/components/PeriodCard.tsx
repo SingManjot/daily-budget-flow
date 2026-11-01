@@ -27,12 +27,10 @@ export function PeriodCard({
       )}
     >
       <div className="flex items-center justify-between gap-2">
-        <span
-          className={cn("label-mono truncate", active ? "text-brasshi" : "text-mut")}
-        >
+        <span className={cn("label-section truncate", active ? "text-brasshi" : "text-mut")}>
           {period.type === "weekday" ? "Weekdays" : "Weekend"}
         </span>
-        <span className="shrink-0 font-mono text-[10px] text-mut">
+        <span className="shrink-0 text-[13px] font-medium text-mut">
           {showRange
             ? formatPeriodRange(period)
             : active
@@ -43,20 +41,34 @@ export function PeriodCard({
         </span>
       </div>
 
-      <p className={cn("mt-3 text-[17px] font-medium", !active && "text-foreground/80")}>
-        {formatMoney(spent, currency)} <span className="text-mut">/ {formatMoney(budget, currency)}</span>
+      <p
+        className={cn(
+          "mt-2 text-[22px] font-semibold tracking-tight",
+          !active && "text-foreground/80",
+        )}
+      >
+        {formatMoney(spent, currency)}{" "}
+        <span className="text-[15px] font-normal text-mut">/ {formatMoney(budget, currency)}</span>
       </p>
 
-      <div className="mt-2.5 h-1 overflow-hidden rounded-full bg-hair">
+      <div className="mt-2.5 h-1.5 overflow-hidden rounded-full bg-hair">
         <div
-          className={cn("h-full rounded-full transition-[width] duration-700", over ? "bg-over" : active ? "bg-brass" : "bg-brass/55")}
+          className={cn(
+            "h-full rounded-full transition-[width] duration-700",
+            over ? "bg-over" : active ? "bg-brass" : "bg-brass/55",
+          )}
           style={{ width: `${pct}%` }}
         />
       </div>
 
       <div className="mt-3 flex items-center justify-between">
-        <span className="text-[12px] text-mut">{formatMoney(added, currency)} added</span>
-        <span className={cn("text-[13px]", over ? "text-over" : active ? "text-brasshi" : "text-foreground/80")}>
+        <span className="text-[13px] text-mut">{formatMoney(added, currency)} added</span>
+        <span
+          className={cn(
+            "text-[15px] font-medium",
+            over ? "text-over" : active ? "text-brasshi" : "text-foreground/80",
+          )}
+        >
           {over
             ? `${formatMoney(remaining, currency)} over`
             : `${formatMoney(remaining, currency)} left`}

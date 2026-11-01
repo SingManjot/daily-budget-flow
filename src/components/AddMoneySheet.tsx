@@ -7,7 +7,6 @@ import { fromISODate, periodTypeForDate, toISODate } from "@/lib/periods";
 import type { PeriodType } from "@/lib/types";
 import { hapticSuccess } from "@/lib/native";
 
-
 export function AddMoneySheet({
   open,
   onOpenChange,
@@ -43,9 +42,9 @@ export function AddMoneySheet({
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
       <DrawerContent className="border-hair bg-background">
-        <div className="mx-auto w-full max-w-[420px] px-5 pb-8 pt-2">
-          <DrawerTitle className="label-mono text-center text-mut">Add money</DrawerTitle>
-          <p className="mt-1 text-center text-[12px] text-mut">
+        <div className="mx-auto w-full max-w-[420px] px-5 pb-[calc(env(safe-area-inset-bottom,0px)+2rem)] pt-3">
+          <DrawerTitle className="text-center text-[17px] font-semibold">Add Money</DrawerTitle>
+          <p className="mt-1 text-center text-[13px] text-mut">
             Extra money for this period. Your budget stays the same.
           </p>
 
@@ -55,18 +54,18 @@ export function AddMoneySheet({
 
           <div className="mt-5 grid grid-cols-2 gap-3">
             <div>
-              <p className="label-mono text-mut">Date</p>
+              <p className="label-section text-mut">Date</p>
               <input
                 type="date"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                className="mt-2 w-full rounded-xl bg-card px-3 py-2.5 text-[13px] text-foreground ring-1 ring-hair outline-none"
+                className="mt-2 h-11 w-full rounded-xl bg-card px-3 text-[16px] text-foreground ring-1 ring-hair outline-none"
               />
             </div>
             <div>
-              <p className="label-mono text-mut">Period</p>
-              <div className="mt-2 flex h-[42px] items-center justify-center rounded-xl bg-card ring-1 ring-hair">
-                <span className="text-[12px] text-brasshi">
+              <p className="label-section text-mut">Period</p>
+              <div className="mt-2 flex h-11 items-center justify-center rounded-xl bg-muted">
+                <span className="text-[15px] font-medium text-brasshi">
                   {periodType === "weekday" ? "Weekday" : "Weekend"}
                 </span>
               </div>
@@ -77,14 +76,14 @@ export function AddMoneySheet({
             value={note}
             onChange={(e) => setNote(e.target.value)}
             placeholder="Note (optional)"
-            className="mt-4 w-full rounded-xl bg-card px-3 py-3 text-[13px] text-foreground ring-1 ring-hair outline-none placeholder:text-mut/70"
+            className="mt-4 h-12 w-full rounded-xl bg-card px-4 text-[16px] text-foreground ring-1 ring-hair outline-none placeholder:text-mut/70 focus:ring-brass/50"
           />
 
           <button
             onClick={save}
-            className="mt-5 h-12 w-full rounded-xl bg-card text-[14px] font-medium text-foreground ring-1 ring-hair transition active:bg-accent"
+            className="pressable mt-6 h-[50px] w-full rounded-full bg-brass text-[17px] font-semibold text-background active:bg-brasshi"
           >
-            Add money
+            Add Money
           </button>
         </div>
       </DrawerContent>
