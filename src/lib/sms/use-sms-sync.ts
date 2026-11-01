@@ -1,7 +1,13 @@
 import { useCallback, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { useStore } from "@/lib/store";
-import { ackPendingSms, getPendingSms, onSmsReceived, smsSupported } from "./plugin";
+import {
+  ackPendingSms,
+  getPendingSms,
+  onSmsReceived,
+  setNativeSmsEnabled,
+  smsSupported,
+} from "./plugin";
 
 /**
  * Drains SMS captured by the native receiver into the review queue: on launch, whenever the
@@ -33,6 +39,12 @@ export function useSmsSync() {
       busy.current = false;
     }
   }, []);
+
+  // Keep the native receiver in step with the in-app switch (also covers app updates).
+  useEffect(() => {
+    if (!smsSupported()) return;
+    void setNativeSmsEnabled(enabled).catch(() => {});
+  }, [enabled]);
 
   useEffect(() => {
     if (!enabled || !smsSupported()) return;

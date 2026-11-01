@@ -17,6 +17,10 @@ on:
         required: false
         default: ''
 
+# Least privilege for GITHUB_TOKEN: only the release step needs to write (tags + release).
+permissions:
+  contents: write
+
 jobs:
   android-build:
     runs-on: ubuntu-latest
@@ -83,6 +87,16 @@ jobs:
 
       - name: Sync Capacitor
         run: npx cap sync android
+
+      # The app holds spending data and bank-SMS review items: keep them out of Android
+      # cloud/adb backups. Fails the build if the generated manifest changes shape.
+      - name: Harden Android manifest
+        shell: bash
+        run: |
+          MANIFEST=android/app/src/main/AndroidManifest.xml
+          grep -q 'android:allowBackup="true"' "$MANIFEST"
+          sed -i 's/android:allowBackup="true"/android:allowBackup="false"/' "$MANIFEST"
+          grep -q 'android:allowBackup="false"' "$MANIFEST"
 
       - name: Inject Android version metadata
         shell: bash

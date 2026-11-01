@@ -25,6 +25,7 @@ import org.json.JSONObject;
  * - getPending: messages captured by SmsReceiver since the last drain.
  * - removePending: drop drained messages by id.
  * - readInbox: back-fill from the SMS inbox (needs READ_SMS).
+ * - setEnabled: mirror the in-app switch; disabling stops capture and clears the queue.
  * - "smsReceived" event: fired when a new message is queued while the app is running.
  */
 @CapacitorPlugin(
@@ -50,6 +51,13 @@ public class SmsCapturePlugin extends Plugin {
     static void notifyNewMessages() {
         SmsCapturePlugin plugin = instance;
         if (plugin != null) plugin.notifyListeners("smsReceived", new JSObject());
+    }
+
+    @PluginMethod
+    public void setEnabled(PluginCall call) {
+        Boolean enabled = call.getBoolean("enabled", false);
+        SmsStore.setEnabled(getContext(), enabled != null && enabled);
+        call.resolve();
     }
 
     @PluginMethod

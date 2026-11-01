@@ -14,6 +14,7 @@ final class SmsStore {
 
     private static final String PREFS = "sms_capture";
     private static final String KEY_QUEUE = "queue";
+    private static final String KEY_ENABLED = "enabled";
     /** Hard cap so a flood of messages can never grow storage without bound. */
     private static final int MAX_ITEMS = 300;
 
@@ -40,6 +41,18 @@ final class SmsStore {
             return;
         }
         prefs(context).edit().putString(KEY_QUEUE, queue.toString()).apply();
+    }
+
+    /** Mirrors the in-app "Read bank SMS" switch. Off by default: nothing is captured. */
+    static boolean isEnabled(Context context) {
+        return prefs(context).getBoolean(KEY_ENABLED, false);
+    }
+
+    /** Turning capture off also deletes anything still queued. */
+    static synchronized void setEnabled(Context context, boolean enabled) {
+        SharedPreferences.Editor editor = prefs(context).edit().putBoolean(KEY_ENABLED, enabled);
+        if (!enabled) editor.remove(KEY_QUEUE);
+        editor.apply();
     }
 
     static synchronized JSONArray read(Context context) {

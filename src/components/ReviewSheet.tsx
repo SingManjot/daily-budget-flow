@@ -75,6 +75,7 @@ function ReviewItem({ item }: { item: PendingExpense }) {
           <p className="truncate text-[13px] text-mut">
             {relativeDay(item.date)}
             {item.account ? ` · A/c ••${item.account}` : ""}
+            {item.sender ? ` · ${item.sender}` : ""}
           </p>
         </div>
         <span className="shrink-0 text-[17px] font-semibold">

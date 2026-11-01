@@ -28,7 +28,16 @@ export interface ParsedDebit {
   fingerprint: string;
 }
 
-const OTP = /\botp\b|one[\s-]time password|verification code|\bpin\b.*\bshare\b/i;
+/** Bank alerts are short; longer input is rejected before any regex runs. */
+export const MAX_BODY_LENGTH = 2000;
+
+/**
+ * Any hint that a message carries a one-time code or credential. Deliberately broad: a missed
+ * expense can be added by hand, a stored OTP cannot be un-stored.
+ * Keep in sync with SECRET in plugins/sms-capture/.../SmsFilter.java (the first line of defence).
+ */
+export const SECRET =
+  /\botp\b|one[\s-]?time|pass\s?code|password|\bpwd\b|verification|verify|security\s+code|auth\w*\s+code|\bcode\b|\bcvv\b|\bm?pin\b|do\s+not\s+share|don'?t\s+share|never\s+share|not\s+to\s+share/i;
 
 /** Messages that mention money but aren't a completed debit. */
 const NOT_A_DEBIT = new RegExp(
@@ -97,9 +106,10 @@ const NOT_A_MERCHANT =
   /^(?:upi|neft|imps|rtgs|pos|atm|ecom|e-?commerce|merchant|beneficiary|a\/?c.*|account.*|card.*|your.*|(?:rs\.?|inr|₹)\s*[\d,.]*|[\d\s+-]+)$/i;
 
 export function parseBankSms(sms: RawSms): ParsedDebit | null {
+  if (sms.body.length > MAX_BODY_LENGTH) return null;
   const body = sms.body.replace(/\s+/g, " ").trim();
   if (!body) return null;
-  if (OTP.test(body)) return null;
+  if (SECRET.test(body)) return null;
   if (NOT_A_DEBIT.test(body)) return null;
   const isDebit = DEBIT.test(body);
   if (!isDebit && CREDIT_ONLY.test(body)) return null;
@@ -141,6 +151,19 @@ function findMerchant(body: string): string | null {
     }
   }
   return null;
+}
+
+/**
+ * Copy of the message that is safe to keep for display: every run of 4+ digits (account and
+ * card numbers, refs, balances, phone numbers, any code) is masked except the debit amount.
+ */
+export function redactSmsBody(body: string, amount: number): string {
+  const keep = String(Math.trunc(amount));
+  return body.slice(0, MAX_BODY_LENGTH).replace(/\d[\d,]*(?:\.\d+)?/g, (run) => {
+    const digits = run.replace(/[^\d.]/g, "").split(".")[0] ?? "";
+    if (digits.length < 4 || digits === keep) return run;
+    return "•".repeat(Math.min(digits.length, 6));
+  });
 }
 
 export function cleanMerchant(raw: string): string | null {
