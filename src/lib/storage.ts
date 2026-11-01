@@ -1,4 +1,7 @@
+import { kv } from "./kv";
 import type { AppData } from "./types";
+
+// Same key as the old web app, so exported JSON backups import unchanged.
 
 const KEY = "spend-tracker:v1";
 
@@ -25,9 +28,8 @@ export function uid(): string {
 }
 
 export function loadData(): AppData {
-  if (typeof window === "undefined") return emptyData;
   try {
-    const raw = window.localStorage.getItem(KEY);
+    const raw = kv.get(KEY);
     if (!raw) return emptyData;
     const parsed = JSON.parse(raw) as AppData;
     return { ...emptyData, ...parsed };
@@ -37,11 +39,9 @@ export function loadData(): AppData {
 }
 
 export function saveData(data: AppData): void {
-  if (typeof window === "undefined") return;
-  window.localStorage.setItem(KEY, JSON.stringify(data));
+  kv.set(KEY, JSON.stringify(data));
 }
 
 export function clearData(): void {
-  if (typeof window === "undefined") return;
-  window.localStorage.removeItem(KEY);
+  kv.remove(KEY);
 }

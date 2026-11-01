@@ -2,7 +2,6 @@ import {
   createContext,
   useCallback,
   useContext,
-  useEffect,
   useMemo,
   useRef,
   useState,
@@ -57,16 +56,12 @@ interface StoreValue {
 const StoreContext = createContext<StoreValue | null>(null);
 
 export function StoreProvider({ children }: { children: ReactNode }) {
-  const [data, setData] = useState<AppData>(emptyData);
-  const [ready, setReady] = useState(false);
+  // Native storage is synchronous, so data is available on the first render.
+  const [data, setData] = useState<AppData>(loadData);
+  const ready = true;
   /** Latest committed data, for async callers that need a synchronous read. */
   const dataRef = useRef(data);
   dataRef.current = data;
-
-  useEffect(() => {
-    setData(loadData());
-    setReady(true);
-  }, []);
 
   const commit = useCallback((next: AppData) => {
     setData(next);

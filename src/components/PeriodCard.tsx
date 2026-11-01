@@ -1,79 +1,61 @@
-import { cn } from "@/lib/utils";
+import { View } from "react-native";
+import type { PeriodSummary } from "@/lib/calc";
 import { formatMoney } from "@/lib/format";
 import { formatPeriodRange } from "@/lib/periods";
-import type { PeriodSummary } from "@/lib/calc";
+import { useTheme } from "@/theme/ThemeProvider";
+import { space, tabular, type } from "@/theme/type";
+import { Card, ProgressBar, Txt } from "./ui";
 
 export function PeriodCard({
   summary,
   active,
-  currency = "₹",
+  currency,
   showRange = false,
 }: {
   summary: PeriodSummary;
   active: boolean;
-  currency?: string;
+  currency: string;
   showRange?: boolean;
 }) {
+  const { colors } = useTheme();
   const { period, budget, spent, added, remaining } = summary;
   const total = budget + added;
-  const pct = total > 0 ? Math.min(100, (spent / total) * 100) : 0;
   const over = remaining < 0;
+  const days = period.type === "weekday" ? "Mon–Fri" : "Sat–Sun";
 
   return (
-    <div
-      className={cn(
-        "anim-rise rounded-2xl bg-card p-4 ring-1 transition-colors duration-300",
-        active ? "ring-brass/40" : "ring-hair",
-      )}
-    >
-      <div className="flex items-center justify-between gap-2">
-        <span className={cn("label-section truncate", active ? "text-brasshi" : "text-mut")}>
+    <Card style={active ? { borderColor: colors.accent, borderWidth: 1 } : null}>
+      <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+        <Txt style={type.sectionHeader} color={active ? colors.accentStrong : colors.textMuted}>
           {period.type === "weekday" ? "Weekdays" : "Weekend"}
-        </span>
-        <span className="shrink-0 text-[13px] font-medium text-mut">
-          {showRange
-            ? formatPeriodRange(period)
-            : active
-              ? `Active · ${period.type === "weekday" ? "Mon–Fri" : "Sat–Sun"}`
-              : period.type === "weekday"
-                ? "Mon–Fri"
-                : "Sat–Sun"}
-        </span>
-      </div>
-
-      <p
-        className={cn(
-          "mt-2 text-[22px] font-semibold tracking-tight",
-          !active && "text-foreground/80",
-        )}
-      >
-        {formatMoney(spent, currency)}{" "}
-        <span className="text-[15px] font-normal text-mut">/ {formatMoney(budget, currency)}</span>
-      </p>
-
-      <div className="mt-2.5 h-1.5 overflow-hidden rounded-full bg-hair">
-        <div
-          className={cn(
-            "h-full rounded-full transition-[width] duration-700",
-            over ? "bg-over" : active ? "bg-brass" : "bg-brass/55",
-          )}
-          style={{ width: `${pct}%` }}
+        </Txt>
+        <Txt style={type.footnote} muted>
+          {showRange ? formatPeriodRange(period) : active ? `Now · ${days}` : days}
+        </Txt>
+      </View>
+      <View style={{ flexDirection: "row", alignItems: "baseline", marginTop: space.sm, gap: 6 }}>
+        <Txt style={[type.title, tabular]}>{formatMoney(spent, currency)}</Txt>
+        <Txt style={[type.subhead, tabular]} muted>
+          / {formatMoney(budget, currency)}
+        </Txt>
+      </View>
+      <View style={{ marginTop: space.md }}>
+        <ProgressBar
+          value={total > 0 ? spent / total : 0}
+          color={over ? colors.over : colors.accent}
         />
-      </div>
-
-      <div className="mt-3 flex items-center justify-between">
-        <span className="text-[13px] text-mut">{formatMoney(added, currency)} added</span>
-        <span
-          className={cn(
-            "text-[15px] font-medium",
-            over ? "text-over" : active ? "text-brasshi" : "text-foreground/80",
-          )}
+      </View>
+      <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: space.md }}>
+        <Txt style={type.footnote} muted>
+          {formatMoney(added, currency)} added
+        </Txt>
+        <Txt
+          style={[type.subhead, tabular, { fontWeight: "600" }]}
+          color={over ? colors.over : active ? colors.accentStrong : colors.text}
         >
-          {over
-            ? `${formatMoney(remaining, currency)} over`
-            : `${formatMoney(remaining, currency)} left`}
-        </span>
-      </div>
-    </div>
+          {formatMoney(remaining, currency)} {over ? "over" : "left"}
+        </Txt>
+      </View>
+    </Card>
   );
 }

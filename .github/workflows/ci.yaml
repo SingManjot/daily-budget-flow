@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       build-mode:
-        description: 'check = validate build only, debug = build debug APK, release = build signed release APK'
+        description: 'check = tests + typecheck + JS bundle only, debug = debug APK, release = signed release APK'
         required: true
         type: choice
         default: check
@@ -28,6 +28,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
 
       - name: Setup Node
         uses: actions/setup-node@v7
@@ -36,19 +38,31 @@ jobs:
           cache: npm
 
       - name: Setup Java
+        if: ${{ inputs.build-mode != 'check' }}
         uses: actions/setup-java@v6
         with:
           distribution: temurin
-          java-version: 21
+          java-version: 17
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npx tsc --noEmit
+
+      - name: Unit tests
+        run: npm test
+
+      - name: Bundle JavaScript (catches import/resolution errors)
+        run: npx expo export --platform android --output-dir /tmp/bundle-check
 
       - name: Determine version values
+        if: ${{ inputs.build-mode != 'check' }}
         id: version
         shell: bash
         run: |
           set -e
-
           VERSION_CODE="${{ github.run_number }}"
-
           case "${{ inputs.build-mode }}" in
             release)
               if [[ -n "${{ inputs.release-version }}" ]]; then
@@ -56,95 +70,64 @@ jobs:
               else
                 LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || true)
                 if [[ -n "$LATEST_TAG" ]]; then
-                  TAG_VALUE="${LATEST_TAG#v}"
-                  IFS='.' read -r MAJOR MINOR PATCH <<< "$TAG_VALUE"
-                  PATCH=${PATCH:-0}
-                  VERSION_NAME="${MAJOR:-0}.${MINOR:-0}.$((PATCH + 1))"
+                  IFS='.' read -r MAJOR MINOR PATCH <<< "${LATEST_TAG#v}"
+                  VERSION_NAME="${MAJOR:-0}.${MINOR:-0}.$(( ${PATCH:-0} + 1 ))"
                 else
-                  VERSION_NAME="0.1.0"
+                  VERSION_NAME="1.0.0"
                 fi
               fi
               ;;
-            debug)
-              VERSION_NAME="0.0.${VERSION_CODE}-debug"
-              ;;
-            *)
-              VERSION_NAME="0.0.${VERSION_CODE}-check"
-              ;;
+            *) VERSION_NAME="0.0.${VERSION_CODE}-debug" ;;
           esac
-
           echo "version_name=$VERSION_NAME" >> "$GITHUB_OUTPUT"
           echo "version_code=$VERSION_CODE" >> "$GITHUB_OUTPUT"
 
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build web app
-        run: npm run build
-
-      - name: Add Android platform
-        run: npx cap add android
-
-      - name: Sync Capacitor
-        run: npx cap sync android
-
-      # The app holds spending data and bank-SMS review items: keep them out of Android
-      # cloud/adb backups. Fails the build if the generated manifest changes shape.
-      - name: Harden Android manifest
-        shell: bash
-        run: |
-          MANIFEST=android/app/src/main/AndroidManifest.xml
-          grep -q 'android:allowBackup="true"' "$MANIFEST"
-          sed -i 's/android:allowBackup="true"/android:allowBackup="false"/' "$MANIFEST"
-          grep -q 'android:allowBackup="false"' "$MANIFEST"
+      # Generates android/ from app.json (Continuous Native Generation). Never commit android/.
+      - name: Generate native Android project
+        if: ${{ inputs.build-mode != 'check' }}
+        run: npx expo prebuild --platform android --clean --no-install
 
       - name: Inject Android version metadata
+        if: ${{ inputs.build-mode != 'check' }}
         shell: bash
         run: |
-          VERSION_NAME="${{ steps.version.outputs.version_name }}"
-          VERSION_CODE="${{ steps.version.outputs.version_code }}"
-          sed -i "s/versionCode 1/versionCode ${VERSION_CODE}/" android/app/build.gradle
-          sed -i "s/versionName \"1.0\"/versionName \"${VERSION_NAME}\"/" android/app/build.gradle
+          GRADLE=android/app/build.gradle
+          sed -i -E "s/versionCode [0-9]+/versionCode ${{ steps.version.outputs.version_code }}/" "$GRADLE"
+          sed -i -E "s/versionName \"[^\"]+\"/versionName \"${{ steps.version.outputs.version_name }}\"/" "$GRADLE"
+          grep -E "versionCode|versionName" "$GRADLE"
 
       - name: Build debug APK
         if: ${{ inputs.build-mode == 'debug' }}
-        run: cd android && ./gradlew assembleDebug
+        run: cd android && ./gradlew assembleDebug --no-daemon
 
-      - name: Prepare signed release keystore
+      - name: Build release APK (unsigned)
+        if: ${{ inputs.build-mode == 'release' }}
+        run: cd android && ./gradlew assembleRelease --no-daemon
+
+      - name: Sign release APK
         if: ${{ inputs.build-mode == 'release' }}
         env:
           ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        shell: bash
         run: |
+          set -e
           if [[ -z "$ANDROID_KEYSTORE_BASE64" || -z "$ANDROID_KEYSTORE_PASSWORD" || -z "$ANDROID_KEY_ALIAS" || -z "$ANDROID_KEY_PASSWORD" ]]; then
-            echo "Release signing secrets are missing. Add ANDROID_KEYSTORE_BASE64, ANDROID_KEYSTORE_PASSWORD, ANDROID_KEY_ALIAS, and ANDROID_KEY_PASSWORD to repository secrets."
+            echo "Release signing secrets are missing. Add ANDROID_KEYSTORE_BASE64, ANDROID_KEYSTORE_PASSWORD, ANDROID_KEY_ALIAS and ANDROID_KEY_PASSWORD."
             exit 1
           fi
-
-          echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > android/app/release.keystore
-          cat > android/keystore.properties <<EOF
-          storeFile=release.keystore
-          storePassword=$ANDROID_KEYSTORE_PASSWORD
-          keyAlias=$ANDROID_KEY_ALIAS
-          keyPassword=$ANDROID_KEY_PASSWORD
-          EOF
-
-      - name: Build signed release APK
-        if: ${{ inputs.build-mode == 'release' }}
-        env:
-          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
-          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
-          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
-          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
-        run: |
-          if [[ -z "$ANDROID_KEYSTORE_BASE64" || -z "$ANDROID_KEYSTORE_PASSWORD" || -z "$ANDROID_KEY_ALIAS" || -z "$ANDROID_KEY_PASSWORD" ]]; then
-            echo "Release signing secrets are missing. Cannot build signed APK."
-            exit 1
-          fi
-
-          cd android && ./gradlew assembleRelease
+          echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/release.keystore"
+          BUILD_TOOLS=$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)
+          OUT=android/app/build/outputs/apk/release
+          UNSIGNED=$(ls $OUT/*.apk | head -1)
+          "$BUILD_TOOLS/zipalign" -f -p 4 "$UNSIGNED" "$OUT/aligned.apk"
+          "$BUILD_TOOLS/apksigner" sign --ks "$RUNNER_TEMP/release.keystore" \
+            --ks-pass env:ANDROID_KEYSTORE_PASSWORD --ks-key-alias "$ANDROID_KEY_ALIAS" \
+            --key-pass env:ANDROID_KEY_PASSWORD --out "$OUT/app-release.apk" "$OUT/aligned.apk"
+          "$BUILD_TOOLS/apksigner" verify "$OUT/app-release.apk"
+          rm -f "$RUNNER_TEMP/release.keystore"
 
       - name: Upload debug APK artifact
         if: ${{ inputs.build-mode == 'debug' }}
@@ -154,21 +137,17 @@ jobs:
           path: android/app/build/outputs/apk/debug/app-debug.apk
 
       - name: Upload signed release APK artifact
-        if: ${{ inputs.build-mode == 'release' && hashFiles('android/app/build/outputs/apk/release/app-release.apk') != '' }}
+        if: ${{ inputs.build-mode == 'release' }}
         uses: actions/upload-artifact@v7
         with:
           name: daily-budget-flow-${{ steps.version.outputs.version_name }}-release-apk
           path: android/app/build/outputs/apk/release/app-release.apk
 
       - name: Create GitHub release with APK
-        if: ${{ inputs.build-mode == 'release' && hashFiles('android/app/build/outputs/apk/release/app-release.apk') != '' }}
+        if: ${{ inputs.build-mode == 'release' }}
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ steps.version.outputs.version_name }}
           files: android/app/build/outputs/apk/release/app-release.apk
           draft: false
           generate_release_notes: true
-
-      - name: Skip artifact upload for check build
-        if: ${{ inputs.build-mode == 'check' }}
-        run: 'echo "Check build only: no APK artifact uploaded."'

@@ -1,5 +1,4 @@
 node_modules
 dist
-pnpm-lock.yaml
+.expo
 package-lock.json
-routeTree.gen.ts

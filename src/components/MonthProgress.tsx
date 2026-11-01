@@ -1,11 +1,13 @@
-import { cn } from "@/lib/utils";
-import { formatMoney } from "@/lib/format";
+import { View } from "react-native";
 import type { MonthProgress as MonthProgressData } from "@/lib/calc";
+import { formatMoney } from "@/lib/format";
+import { useTheme } from "@/theme/ThemeProvider";
+import { space, tabular, type } from "@/theme/type";
+import { Card, Txt } from "./ui";
 
 /**
- * Week-by-week strip for the current month. Each weekday/weekend block is a
- * column: filled to the share of its budget used, brass when under, red when
- * over, faint while still upcoming.
+ * One column per weekday/weekend block this month: height is the block's planned budget,
+ * fill is what was spent. Accent when under, red when over, faded while upcoming.
  */
 export function MonthProgress({
   progress,
@@ -14,72 +16,99 @@ export function MonthProgress({
   progress: MonthProgressData;
   currency: string;
 }) {
+  const { colors } = useTheme();
   const { cells } = progress;
   const max = Math.max(1, ...cells.map((c) => Math.max(c.planned, c.spent)));
+  const closed = cells.filter((c) => c.state === "past").length;
 
   return (
-    <div className="rounded-2xl bg-card p-4 ring-1 ring-hair">
-      <div className="flex items-baseline justify-between">
-        <p className="label-section text-mut">Month so far</p>
-        <p className="text-[13px] font-medium text-mut">
-          {formatMoney(progress.settledSpent, currency)} /{" "}
-          {formatMoney(progress.settledPlanned, currency)} closed
-        </p>
-      </div>
+    <Card>
+      <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+        <Txt style={type.sectionHeader} muted>
+          Month so far
+        </Txt>
+        <Txt style={[type.footnote, tabular]} muted>
+          {closed} of {cells.length} closed
+        </Txt>
+      </View>
 
-      <div className="mt-4 flex h-24 items-end gap-1.5">
-        {cells.map((c, i) => {
+      <View
+        style={{
+          height: 96,
+          flexDirection: "row",
+          alignItems: "flex-end",
+          gap: 6,
+          marginTop: space.lg,
+        }}
+      >
+        {cells.map((c) => {
           const over = c.spent > c.planned;
-          const fill = Math.min(100, (c.spent / max) * 100);
-          const plan = Math.min(100, (c.planned / max) * 100);
+          const h = Math.max(c.planned, c.spent, max * 0.08) / max;
+          const fill = h > 0 ? Math.min(1, c.spent / (h * max)) : 0;
+          const current = c.state === "current";
           return (
-            <div key={c.id} className="group relative flex h-full flex-1 flex-col justify-end">
-              <div
-                className={cn(
-                  "relative w-full overflow-hidden rounded-md ring-1 transition-colors",
-                  c.state === "current" ? "ring-brass/45" : "ring-hair",
-                  c.state === "future" ? "opacity-40" : "",
-                )}
-                style={{ height: `${Math.max(plan, fill, 8)}%` }}
+            <View key={c.id} style={{ flex: 1, height: "100%", justifyContent: "flex-end" }}>
+              <View
+                style={{
+                  height: `${h * 100}%`,
+                  borderRadius: 6,
+                  overflow: "hidden",
+                  justifyContent: "flex-end",
+                  backgroundColor: colors.elevated,
+                  opacity: c.state === "future" ? 0.45 : 1,
+                  borderWidth: current ? 1 : 0,
+                  borderColor: colors.accent,
+                }}
               >
-                {/* planned capacity */}
-                <div className="absolute inset-0 bg-hair/60" />
-                {/* actual spend */}
-                <div
-                  className={cn(
-                    "anim-bar absolute inset-x-0 bottom-0",
-                    over ? "bg-over/80" : c.state === "current" ? "bg-brasshi/80" : "bg-brass/60",
-                  )}
+                <View
                   style={{
-                    height: `${
-                      Math.max(plan, fill, 8) > 0 ? (fill / Math.max(plan, fill, 8)) * 100 : 0
-                    }%`,
-                    animationDelay: `${i * 60}ms`,
+                    height: `${fill * 100}%`,
+                    backgroundColor: over
+                      ? colors.over
+                      : current
+                        ? colors.accentStrong
+                        : colors.accent,
                   }}
                 />
-              </div>
-              <span
-                className={cn(
-                  "mt-1.5 text-center text-[13px]",
-                  c.state === "current" ? "text-brasshi" : "text-mut",
-                )}
-              >
-                {c.type === "weekday" ? "WD" : "WE"}
-              </span>
-            </div>
+              </View>
+            </View>
           );
         })}
-      </div>
+      </View>
+      <View style={{ flexDirection: "row", gap: 6, marginTop: 6 }}>
+        {cells.map((c) => (
+          <Txt
+            key={c.id}
+            style={[type.caption, { flex: 1, textAlign: "center" }]}
+            color={c.state === "current" ? colors.accentStrong : colors.textMuted}
+          >
+            {c.type === "weekday" ? "WD" : "WE"}
+          </Txt>
+        ))}
+      </View>
 
-      <div className="mt-3 flex items-center justify-between border-t border-hair pt-3">
-        <span className="text-[12px] text-mut">
-          {cells.filter((c) => c.state === "past").length} of {cells.length} blocks closed
-        </span>
-        <span className={cn("text-[12px]", progress.result >= 0 ? "text-brasshi" : "text-over")}>
-          {progress.result >= 0 ? "+" : ""}
+      <View
+        style={{
+          flexDirection: "row",
+          justifyContent: "space-between",
+          marginTop: space.md,
+          paddingTop: space.md,
+          borderTopWidth: 0.5,
+          borderTopColor: colors.hairline,
+        }}
+      >
+        <Txt style={[type.footnote, tabular]} muted>
+          {formatMoney(progress.settledSpent, currency)} of{" "}
+          {formatMoney(progress.settledPlanned, currency)} closed
+        </Txt>
+        <Txt
+          style={[type.footnote, tabular, { fontWeight: "600" }]}
+          color={progress.result >= 0 ? colors.accentStrong : colors.over}
+        >
+          {progress.result >= 0 ? "+" : "−"}
           {formatMoney(progress.result, currency)} banked
-        </span>
-      </div>
-    </div>
+        </Txt>
+      </View>
+    </Card>
   );
 }

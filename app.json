@@ -1,0 +1,48 @@
+{
+  "expo": {
+    "name": "Daily Budget Flow",
+    "slug": "daily-budget-flow",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "dailybudgetflow",
+    "userInterfaceStyle": "automatic",
+    "ios": {
+      "bundleIdentifier": "com.dailybudgetflow.app",
+      "supportsTablet": false
+    },
+    "android": {
+      "package": "com.dailybudgetflow.app",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "backgroundColor": "#10B981"
+      },
+      "allowBackup": false,
+      "predictiveBackGestureEnabled": true,
+      "blockedPermissions": [
+        "android.permission.SYSTEM_ALERT_WINDOW",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE"
+      ]
+    },
+    "web": {
+      "output": "single"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-sqlite",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#10B981",
+          "image": "./assets/images/splash-icon.png",
+          "imageWidth": 180
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true,
+      "reactCompiler": true
+    }
+  }
+}
