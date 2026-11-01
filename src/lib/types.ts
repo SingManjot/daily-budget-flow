@@ -25,6 +25,8 @@ export interface Expense {
   periodType: PeriodType;
   date: string; // yyyy-MM-dd
   note?: string;
+  /** "sms" when confirmed from an imported bank SMS; absent for manual entries. */
+  source?: "sms";
   createdAt: string;
   updatedAt: string;
 }
@@ -47,6 +49,31 @@ export interface Category {
   createdAt: string;
 }
 
+/** A debit read from a bank SMS, waiting for the user to confirm or dismiss it. */
+export interface PendingExpense {
+  id: string;
+  /** Identifies the source message; used to never import it twice. */
+  fingerprint: string;
+  amount: number;
+  merchant: string | null;
+  account: string | null;
+  date: string; // yyyy-MM-dd
+  /** Category guessed from past choices or merchant keywords. */
+  suggestedCategoryId: string | null;
+  sender: string;
+  body: string;
+  receivedAt: string;
+}
+
+export interface SmsImportState {
+  enabled: boolean;
+  lastSyncAt?: string;
+  /** Fingerprints already added or dismissed, newest last (capped). */
+  seen: string[];
+  /** merchantKey -> categoryId, learnt from confirmations. */
+  merchantCategories: Record<string, string>;
+}
+
 export interface AppData {
   version: number;
   user: User | null;
@@ -54,4 +81,7 @@ export interface AppData {
   expenses: Expense[];
   additions: MoneyAddition[];
   categories: Category[];
+  /** Bank-SMS transactions awaiting review. Optional: older backups don't have it. */
+  pending?: PendingExpense[];
+  smsImport?: SmsImportState;
 }

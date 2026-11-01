@@ -1,0 +1,15 @@
+{
+  "name": "capacitor-sms-capture",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Local Capacitor plugin: captures bank transaction SMS on Android and queues them for the web app.",
+  "license": "UNLICENSED",
+  "capacitor": {
+    "android": {
+      "src": "android"
+    }
+  },
+  "peerDependencies": {
+    "@capacitor/core": ">=8.0.0"
+  }
+}
