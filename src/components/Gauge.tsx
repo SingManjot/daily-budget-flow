@@ -27,8 +27,8 @@ export function Gauge({ ratio }: { ratio: number }) {
         />
         <div className="mx-auto -mt-[3px] size-1.5 rounded-full bg-brasshi" />
       </div>
-      <span className="label-mono absolute bottom-2 left-5 text-[10px] text-mut">Under</span>
-      <span className="label-mono absolute bottom-2 right-5 text-[10px] text-mut">Over</span>
+      <span className="label-section absolute bottom-2 left-5 text-[12px] text-mut">Under</span>
+      <span className="label-section absolute bottom-2 right-5 text-[12px] text-mut">Over</span>
     </div>
   );
 }

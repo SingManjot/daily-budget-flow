@@ -36,11 +36,15 @@ function Overview() {
   const hasData = month.spent > 0;
 
   return (
-    <div className="px-6 pb-4 pt-8">
-      <p className="label-mono text-mut">{monthLabel(monthKey)}</p>
+    <div className="px-5 pb-4 pt-8">
+      <h1 className="title-large">Overview</h1>
+      <p className="label-section mt-4 text-mut">{monthLabel(monthKey)}</p>
       <div className="anim-settle mt-2">
         <span
-          className={cn("font-mono text-[24px] leading-none", saved ? "text-brasshi" : "text-over")}
+          className={cn(
+            "text-[34px] font-semibold leading-none tracking-tight",
+            saved ? "text-brasshi" : "text-over",
+          )}
         >
           {formatMoney(month.result, currency)}
         </span>
@@ -71,7 +75,7 @@ function Overview() {
         </p>
       )}
 
-      <p className="label-mono mt-8 text-mut">Weekday vs weekend</p>
+      <p className="label-section mt-8 pl-1 text-mut">Weekday vs weekend</p>
       <div className="mt-3 space-y-3">
         <SplitBar
           label="Weekdays"
@@ -87,7 +91,7 @@ function Overview() {
         />
       </div>
 
-      <p className="label-mono mt-8 text-mut">Spending trend</p>
+      <p className="label-section mt-8 pl-1 text-mut">Spending trend</p>
       {hasData ? (
         <div className="mt-3 h-40 rounded-2xl bg-card p-3 ring-1 ring-hair">
           <ResponsiveContainer width="100%" height="100%">
@@ -125,18 +129,18 @@ function Overview() {
         <Empty text="No spending yet" sub="Add your first expense to start tracking this month." />
       )}
 
-      <p className="label-mono mt-8 text-mut">Where it went</p>
+      <p className="label-section mt-8 pl-1 text-mut">Where it went</p>
       {cats.length ? (
         <div className="mt-3 space-y-3 rounded-2xl bg-card p-4 ring-1 ring-hair">
           {cats.map((c) => (
             <div key={c.categoryId}>
               <div className="flex items-center justify-between text-[13px]">
                 <span className="truncate">{c.name}</span>
-                <span className="shrink-0 font-mono text-[12px]">
+                <span className="shrink-0 text-[13px] font-medium">
                   {formatMoney(c.total, currency)}
                 </span>
               </div>
-              <div className="mt-1.5 h-1 overflow-hidden rounded-full bg-hair">
+              <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-hair">
                 <div
                   className="anim-bar h-full rounded-full bg-brass"
                   style={{ width: `${(c.total / maxCat) * 100}%` }}
@@ -152,21 +156,13 @@ function Overview() {
   );
 }
 
-function Stat({
-  label,
-  value,
-  tone,
-}: {
-  label: string;
-  value: string;
-  tone?: "under" | "over";
-}) {
+function Stat({ label, value, tone }: { label: string; value: string; tone?: "under" | "over" }) {
   return (
     <div className="rounded-2xl bg-card p-3 ring-1 ring-hair">
-      <p className="label-mono text-[10px] text-mut">{label}</p>
+      <p className="label-section text-[12px] text-mut">{label}</p>
       <p
         className={cn(
-          "mt-2 font-mono text-[14px]",
+          "mt-2 text-[15px] font-semibold",
           tone === "under" && "text-brasshi",
           tone === "over" && "text-over",
         )}
@@ -193,13 +189,13 @@ function SplitBar({
   return (
     <div className="rounded-2xl bg-card p-4 ring-1 ring-hair">
       <div className="flex items-center justify-between">
-        <span className="label-mono text-mut">{label}</span>
-        <span className="font-mono text-[12px]">
+        <span className="label-section text-mut">{label}</span>
+        <span className="text-[13px] font-medium">
           {formatMoney(spent, currency)}{" "}
           <span className="text-mut">/ {formatMoney(planned, currency)}</span>
         </span>
       </div>
-      <div className="mt-3 h-1 overflow-hidden rounded-full bg-hair">
+      <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-hair">
         <div
           className={cn("anim-bar h-full rounded-full", over ? "bg-over" : "bg-brass")}
           style={{ width: `${pct}%` }}
@@ -212,7 +208,7 @@ function SplitBar({
 function Empty({ text, sub }: { text: string; sub: string }) {
   return (
     <div className="mt-3 rounded-2xl bg-card px-4 py-8 text-center ring-1 ring-hair">
-      <p className="text-[14px]">{text}</p>
+      <p className="text-[15px]">{text}</p>
       <p className="mt-1 text-[12px] text-mut">{sub}</p>
     </div>
   );

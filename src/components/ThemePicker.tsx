@@ -18,7 +18,10 @@ export function ThemePicker() {
               active ? "bg-accent ring-brass" : "bg-card ring-hair active:bg-accent"
             }`}
           >
-            <span className="relative flex h-9 items-center justify-center gap-1 rounded-lg" style={{ background: t.swatch[0] }}>
+            <span
+              className="relative flex h-9 items-center justify-center gap-1 rounded-lg"
+              style={{ background: t.swatch[0] }}
+            >
               <span className="size-3.5 rounded-full" style={{ background: t.swatch[1] }} />
               <span className="size-2.5 rounded-full" style={{ background: t.swatch[2] }} />
               {active && (
@@ -28,7 +31,7 @@ export function ThemePicker() {
               )}
             </span>
             <span className="mt-2 block text-[12px] font-medium">{t.label}</span>
-            <span className="block text-[10px] leading-tight text-mut">{t.hint}</span>
+            <span className="block text-[11px] leading-tight text-mut">{t.hint}</span>
           </button>
         );
       })}

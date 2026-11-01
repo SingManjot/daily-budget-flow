@@ -11,14 +11,14 @@ export function AmountField({
 }) {
   return (
     <div className="flex items-baseline justify-center gap-2 rounded-2xl bg-card px-4 py-6 ring-1 ring-hair">
-      <span className="text-[24px] text-mut">{currency}</span>
+      <span className="text-[28px] font-medium text-mut">{currency}</span>
       <input
         autoFocus={autoFocus}
         inputMode="decimal"
         value={value}
         placeholder="0"
         onChange={(e) => onChange(e.target.value.replace(/[^0-9.]/g, ""))}
-        className="w-full max-w-[200px] bg-transparent text-center font-mono text-[34px] leading-none text-foreground outline-none placeholder:text-hair"
+        className="w-full max-w-[200px] bg-transparent text-center text-[44px] font-semibold leading-none tracking-tight text-foreground outline-none placeholder:text-hair"
       />
     </div>
   );

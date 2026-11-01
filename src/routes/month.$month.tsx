@@ -2,16 +2,11 @@ import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ChevronLeft } from "lucide-react";
 import { useStore } from "@/lib/store";
-import {
-  categoryTotals,
-  expensesInMonth,
-  monthPeriodSummaries,
-  summarizeMonth,
-} from "@/lib/calc";
+import { categoryTotals, expensesInMonth, monthPeriodSummaries, summarizeMonth } from "@/lib/calc";
 import { formatPeriodRange, fromISODate, monthLabel, periodContains } from "@/lib/periods";
 import { format } from "date-fns";
 import { formatMoney } from "@/lib/format";
-import { CategoryIcon } from "@/components/CategoryIcon";
+import { CategoryBadge, CategoryIcon } from "@/components/CategoryIcon";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/month/$month")({
@@ -47,15 +42,22 @@ function MonthDetail() {
   );
 
   return (
-    <div className="px-6 pb-4 pt-8">
-      <Link to="/history" className="inline-flex items-center gap-1 text-[13px] text-mut">
-        <ChevronLeft className="size-4" strokeWidth={1.5} /> History
+    <div className="px-5 pb-4 pt-8">
+      <Link
+        to="/history"
+        className="-ml-2 inline-flex h-11 items-center gap-0.5 pr-3 text-[17px] text-brasshi"
+      >
+        <ChevronLeft className="size-6" strokeWidth={2} /> History
       </Link>
 
-      <p className="label-mono mt-5 text-mut">{monthLabel(monthKey)}</p>
+      <h1 className="title-large mt-1">{monthLabel(monthKey, false)}</h1>
+      <p className="label-section mt-4 text-mut">{monthLabel(monthKey)}</p>
       <div className="anim-settle mt-2">
         <span
-          className={cn("font-mono text-[24px] leading-none", saved ? "text-brasshi" : "text-over")}
+          className={cn(
+            "text-[34px] font-semibold leading-none tracking-tight",
+            saved ? "text-brasshi" : "text-over",
+          )}
         >
           {formatMoney(s.result, currency)}
         </span>
@@ -68,27 +70,37 @@ function MonthDetail() {
           {saved ? "saved" : "overspent"}
         </span>
       </div>
-      <p className="mt-3 text-[13px] text-mut">
+      <p className="mt-3 text-[15px] text-mut">
         {formatMoney(s.spent, currency)} spent of {formatMoney(s.planned, currency)} planned
       </p>
 
       <div className="mt-6 space-y-3">
-        <Split label="Weekdays" spent={s.weekday.spent} planned={s.weekday.planned} currency={currency} />
-        <Split label="Weekend" spent={s.weekend.spent} planned={s.weekend.planned} currency={currency} />
+        <Split
+          label="Weekdays"
+          spent={s.weekday.spent}
+          planned={s.weekday.planned}
+          currency={currency}
+        />
+        <Split
+          label="Weekend"
+          spent={s.weekend.spent}
+          planned={s.weekend.planned}
+          currency={currency}
+        />
       </div>
 
-      <p className="label-mono mt-8 text-mut">Categories</p>
+      <p className="label-section mt-8 pl-1 text-mut">Categories</p>
       {cats.length ? (
         <div className="mt-3 space-y-3 rounded-2xl bg-card p-4 ring-1 ring-hair">
           {cats.map((c) => (
             <div key={c.categoryId}>
               <div className="flex items-center justify-between text-[13px]">
                 <span className="truncate">{c.name}</span>
-                <span className="shrink-0 font-mono text-[12px]">
+                <span className="shrink-0 text-[13px] font-medium">
                   {formatMoney(c.total, currency)}
                 </span>
               </div>
-              <div className="mt-1.5 h-1 overflow-hidden rounded-full bg-hair">
+              <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-hair">
                 <div
                   className="anim-bar h-full rounded-full bg-brass"
                   style={{ width: `${(c.total / maxCat) * 100}%` }}
@@ -98,17 +110,15 @@ function MonthDetail() {
           ))}
         </div>
       ) : (
-        <p className="mt-3 text-[13px] text-mut">No spending recorded in this month.</p>
+        <p className="mt-3 text-[15px] text-mut">No spending recorded in this month.</p>
       )}
 
-      <p className="label-mono mt-8 text-mut">Periods</p>
+      <p className="label-section mt-8 pl-1 text-mut">Periods</p>
       <div className="mt-3 space-y-2">
         {periods.map((p) => {
           const diff = p.budget - p.spent;
           const isOpen = openPeriod === p.period.id;
-          const rows = expenses.filter(
-            (e) => periodContains(p.period, e.date),
-          );
+          const rows = expenses.filter((e) => periodContains(p.period, e.date));
           return (
             <div key={p.period.id} className="rounded-2xl bg-card ring-1 ring-hair">
               <button
@@ -116,21 +126,18 @@ function MonthDetail() {
                 className="flex w-full items-center justify-between gap-2 px-4 py-3 text-left"
               >
                 <div className="min-w-0">
-                  <p className="label-mono text-mut">
+                  <p className="label-section text-mut">
                     {p.period.type === "weekday" ? "Weekday" : "Weekend"}
                   </p>
                   <p className="mt-1 text-[13px]">
                     {formatPeriodRange(p.period)} ·{" "}
-                    <span className="font-mono text-[12px]">
+                    <span className="text-[13px] font-medium">
                       {formatMoney(p.spent, currency)} / {formatMoney(p.budget, currency)}
                     </span>
                   </p>
                 </div>
                 <span
-                  className={cn(
-                    "shrink-0 font-mono text-[11px]",
-                    diff >= 0 ? "text-brasshi" : "text-over",
-                  )}
+                  className={cn("shrink-0 text-[13px]", diff >= 0 ? "text-brasshi" : "text-over")}
                 >
                   {formatMoney(diff, currency)} {diff >= 0 ? "under" : "over"}
                 </span>
@@ -146,7 +153,7 @@ function MonthDetail() {
                           <span className="min-w-0 flex-1 truncate text-[13px]">
                             {e.note || cat?.name}
                           </span>
-                          <span className="shrink-0 font-mono text-[12px]">
+                          <span className="shrink-0 text-[13px] font-medium">
                             {formatMoney(e.amount, currency)}
                           </span>
                         </div>
@@ -162,21 +169,21 @@ function MonthDetail() {
         })}
       </div>
 
-      <p className="label-mono mt-8 text-mut">All transactions</p>
+      <p className="label-section mt-8 pl-1 text-mut">All transactions</p>
       {expenses.length ? (
         <div className="mt-3 divide-y divide-hair rounded-2xl bg-card ring-1 ring-hair">
           {expenses.map((e) => {
             const cat = data.categories.find((c) => c.id === e.categoryId);
             return (
               <div key={e.id} className="flex items-center gap-3 px-4 py-3">
-                <CategoryIcon icon={cat?.icon} className="size-4 shrink-0 text-mut" />
+                <CategoryBadge icon={cat?.icon} />
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-[14px]">{e.note || cat?.name}</p>
-                  <p className="text-[11px] text-mut">
+                  <p className="truncate text-[15px]">{e.note || cat?.name}</p>
+                  <p className="text-[12px] text-mut">
                     {cat?.name} · {format(fromISODate(e.date), "EEE, d MMM")}
                   </p>
                 </div>
-                <span className="shrink-0 text-[14px] font-medium">
+                <span className="shrink-0 text-[15px] font-medium">
                   {formatMoney(e.amount, currency)}
                 </span>
               </div>
@@ -184,7 +191,7 @@ function MonthDetail() {
           })}
         </div>
       ) : (
-        <p className="mt-3 text-[13px] text-mut">Nothing recorded yet.</p>
+        <p className="mt-3 text-[15px] text-mut">Nothing recorded yet.</p>
       )}
     </div>
   );
@@ -205,13 +212,13 @@ function Split({
   return (
     <div className="rounded-2xl bg-card p-4 ring-1 ring-hair">
       <div className="flex items-center justify-between">
-        <span className="label-mono text-mut">{label}</span>
-        <span className="font-mono text-[12px]">
+        <span className="label-section text-mut">{label}</span>
+        <span className="text-[13px] font-medium">
           {formatMoney(spent, currency)}{" "}
           <span className="text-mut">/ {formatMoney(planned, currency)}</span>
         </span>
       </div>
-      <div className="mt-3 h-1 overflow-hidden rounded-full bg-hair">
+      <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-hair">
         <div
           className={cn("anim-bar h-full rounded-full", spent > planned ? "bg-over" : "bg-brass")}
           style={{ width: `${pct}%` }}

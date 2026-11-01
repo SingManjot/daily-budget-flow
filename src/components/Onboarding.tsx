@@ -16,7 +16,9 @@ export function Onboarding() {
   const steps = [
     // 0 — welcome
     <div key="welcome" className="anim-rise flex flex-1 flex-col justify-end">
-      <h1 className="font-display text-[52px] italic leading-[1.05] text-brasshi">Spend smarter.</h1>
+      <h1 className="font-display text-[52px] italic leading-[1.05] text-brasshi">
+        Spend smarter.
+      </h1>
       <p className="mt-5 max-w-[19rem] text-[15px] leading-relaxed text-mut">
         Know what you can spend.
         <br />
@@ -27,7 +29,7 @@ export function Onboarding() {
     </div>,
     // 1 — name
     <div key="name" className="anim-rise flex flex-1 flex-col justify-end">
-      <p className="label-mono text-mut">Step 1 of 3</p>
+      <p className="label-section text-mut">Step 1 of 3</p>
       <h1 className="mt-2 text-[26px] font-medium leading-tight">What should we call you?</h1>
       <input
         autoFocus
@@ -39,18 +41,18 @@ export function Onboarding() {
     </div>,
     // 2 — weekday
     <div key="weekday" className="anim-rise flex flex-1 flex-col justify-end">
-      <p className="label-mono text-mut">Step 2 of 3</p>
+      <p className="label-section text-mut">Step 2 of 3</p>
       <h1 className="mt-2 text-[26px] font-medium leading-tight">Set your weekday budget</h1>
-      <p className="mt-2 text-[14px] text-mut">How much can you spend from Monday to Friday?</p>
+      <p className="mt-2 text-[15px] text-mut">How much can you spend from Monday to Friday?</p>
       <div className="mt-6">
         <AmountField value={weekday} onChange={setWeekday} />
       </div>
     </div>,
     // 3 — weekend
     <div key="weekend" className="anim-rise flex flex-1 flex-col justify-end">
-      <p className="label-mono text-mut">Step 3 of 3</p>
+      <p className="label-section text-mut">Step 3 of 3</p>
       <h1 className="mt-2 text-[26px] font-medium leading-tight">Set your weekend budget</h1>
-      <p className="mt-2 text-[14px] text-mut">How much can you spend on Saturday and Sunday?</p>
+      <p className="mt-2 text-[15px] text-mut">How much can you spend on Saturday and Sunday?</p>
       <div className="mt-6">
         <AmountField value={weekend} onChange={setWeekend} />
       </div>
@@ -62,15 +64,15 @@ export function Onboarding() {
       </h1>
       <div className="mt-7 space-y-3">
         <div className="flex items-center justify-between rounded-2xl bg-card px-4 py-4 ring-1 ring-hair">
-          <span className="label-mono text-mut">Mon – Fri</span>
-          <span className="font-mono text-[17px]">{formatMoney(Number(weekday) || 0)}</span>
+          <span className="label-section text-mut">Mon – Fri</span>
+          <span className="text-[17px] font-semibold">{formatMoney(Number(weekday) || 0)}</span>
         </div>
         <div className="flex items-center justify-between rounded-2xl bg-card px-4 py-4 ring-1 ring-hair">
-          <span className="label-mono text-mut">Sat – Sun</span>
-          <span className="font-mono text-[17px]">{formatMoney(Number(weekend) || 0)}</span>
+          <span className="label-section text-mut">Sat – Sun</span>
+          <span className="text-[17px] font-semibold">{formatMoney(Number(weekend) || 0)}</span>
         </div>
       </div>
-      <p className="mt-4 text-[13px] text-mut">
+      <p className="mt-4 text-[15px] text-mut">
         Your weekday and weekend budgets are tracked separately.
       </p>
     </div>,
@@ -114,14 +116,14 @@ export function Onboarding() {
         <button
           disabled={!canContinue}
           onClick={onPress}
-          className="h-13 w-full rounded-xl bg-brass py-4 text-[14px] font-semibold text-background ring-1 ring-brasshi/40 transition active:bg-brasshi disabled:opacity-40"
+          className="h-13 w-full rounded-xl bg-brass py-4 text-[15px] font-semibold text-background ring-1 ring-brasshi/40 transition active:bg-brasshi disabled:opacity-40"
         >
           {labels[step]}
         </button>
         {step > 0 && (
           <button
             onClick={() => setStep((s) => s - 1)}
-            className="mt-3 h-10 w-full text-[13px] text-mut"
+            className="mt-3 h-10 w-full text-[15px] text-mut"
           >
             Back
           </button>
