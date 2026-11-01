@@ -14,7 +14,7 @@ dist-ssr
 .vinxi
 .tanstack/**
 .nitro
-android/
+/android/
 *.apk
 *.aab
 *.local

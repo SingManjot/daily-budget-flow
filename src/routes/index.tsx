@@ -1,4 +1,7 @@
+import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { ChevronRight, MessageSquareText } from "lucide-react";
+import { ReviewSheet } from "@/components/ReviewSheet";
 import { useStore } from "@/lib/store";
 import { currentPeriods, monthProgress, relativeDay, summarizeMonth } from "@/lib/calc";
 import { fromISODate, monthKeyOf, monthLabel, periodTypeForDate } from "@/lib/periods";
@@ -39,6 +42,8 @@ function Home() {
     .slice(0, 4);
   const hasSpending = progress.hasSettled;
   const saved = progress.result >= 0;
+  const [reviewOpen, setReviewOpen] = useState(false);
+  const pendingCount = data.pending?.length ?? 0;
 
   return (
     <div>
@@ -53,6 +58,27 @@ function Home() {
           </span>
         </div>
       </header>
+
+      {pendingCount > 0 && (
+        <section className="px-5 pb-2">
+          <button
+            type="button"
+            onClick={() => setReviewOpen(true)}
+            className="pressable flex w-full items-center gap-3 rounded-2xl bg-brass/12 p-3.5 text-left ring-1 ring-brass/30"
+          >
+            <span className="grid size-9 shrink-0 place-items-center rounded-[10px] bg-brass text-background">
+              <MessageSquareText className="size-[18px]" strokeWidth={2} />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-[15px] font-semibold">
+                {pendingCount} {pendingCount === 1 ? "transaction" : "transactions"} to review
+              </span>
+              <span className="block text-[13px] text-mut">Found in your bank SMS</span>
+            </span>
+            <ChevronRight className="size-5 shrink-0 text-mut" />
+          </button>
+        </section>
+      )}
 
       <section className="px-5 pt-3">
         <p className="label-section anim-rise text-mut">{monthLabel(monthKey)}</p>
@@ -141,6 +167,7 @@ function Home() {
           </div>
         )}
       </section>
+      <ReviewSheet open={reviewOpen} onOpenChange={setReviewOpen} />
     </div>
   );
 }

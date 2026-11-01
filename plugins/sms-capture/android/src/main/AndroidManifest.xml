@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Bank transaction alerts arrive as SMS. Both are runtime permissions the user grants
+         from Settings → SMS Import in the app. -->
+    <uses-permission android:name="android.permission.RECEIVE_SMS" />
+    <uses-permission android:name="android.permission.READ_SMS" />
+
+    <!-- Telephony is optional so the app still installs on devices without it. -->
+    <uses-feature android:name="android.hardware.telephony" android:required="false" />
+
+    <application>
+        <!-- BROADCAST_SMS: only the system can deliver to this receiver. -->
+        <receiver
+            android:name="com.dailybudgetflow.smscapture.SmsReceiver"
+            android:exported="true"
+            android:permission="android.permission.BROADCAST_SMS">
+            <intent-filter>
+                <action android:name="android.provider.Telephony.SMS_RECEIVED" />
+            </intent-filter>
+        </receiver>
+    </application>
+</manifest>

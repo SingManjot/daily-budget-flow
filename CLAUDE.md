@@ -31,9 +31,13 @@ React 19 · TypeScript · TanStack Start/Router (SSR + prerender of `/`, `/histo
 Capacitor 8 (status bar, haptics, keyboard).
 
 Commands: `npm run dev`, `npm run build` (output in `.output/public`, which is Capacitor's
-`webDir`), `npm run lint`, `npx tsc --noEmit`, `npm run android:sync`.
+`webDir`), `npm run lint`, `npx tsc --noEmit`, `npm test`, `npm run android:sync`.
+`npm test` runs `src/**/*.test.ts` with Node's built-in runner (`--experimental-strip-types`,
+no extra deps). Test files and the modules they import must use explicit `.ts` relative imports
+and only `import type` from `@/` paths.
 CI (`.github/workflows/ci.yaml`) is a manual `workflow_dispatch` Android APK build
-(check / debug / release). It has no automatic test or lint gate, and there are no tests.
+(check / debug / release). It has no automatic test or lint gate. Only `debug`/`release` run
+Gradle, so use `debug` to verify native code compiles.
 
 Running the dev server inside a sandbox may need `--host 127.0.0.1` because IPv6 can be
 unavailable there.
@@ -75,7 +79,30 @@ src/
     use-theme.tsx     ThemeProvider; also syncs the Android status bar
     native.ts         Capacitor helpers: syncStatusBar, initNative, hapticTap/Success.
                       All are no-ops on web.
+    sms/              Bank-SMS import (Android): parser.ts (pure, tested), ingest.ts (dedupe +
+                      category suggestion, tested), plugin.ts (JS bridge), use-sms-sync.ts
+plugins/sms-capture/  Local Capacitor plugin (Java), linked via "file:" dependency
 ```
+
+## Bank SMS import
+
+- **Why a local plugin:** CI runs `npx cap add android` fresh each build and `android/` is
+  gitignored, so native code can't live there. `plugins/sms-capture` is an npm package with
+  `capacitor.android.src`; `cap sync` merges its manifest (RECEIVE_SMS, READ_SMS, receiver).
+- **Flow:** `SmsReceiver` (system SMS broadcast) → `SmsFilter.isCandidate` (drops phone-number
+  senders, OTPs, anything without an amount + debit word) → `SmsStore` queue in
+  SharedPreferences (cap 300) → `smsReceived` event. In JS, `useSmsSync` (mounted in AppShell)
+  drains the queue on launch, on foreground and on that event → `ingestSms` → `data.pending` →
+  Home banner → `ReviewSheet` (pick category → `confirmPending` adds an Expense with
+  `source: "sms"` and remembers merchant → category; or `dismissPending`).
+- Settings → SMS Import toggles it (requests permission) and back-fills 30 days from the inbox.
+- **Dedupe:** fingerprint = hash of the message body; `smsImport.seen` (cap 2000) stores
+  fingerprints already added/dismissed.
+- **Adding a bank format:** add a masked sample to `parser.test.ts`, then adjust patterns in
+  `parser.ts`. The Java pre-filter must also accept it (`SmsFilter.java`).
+- **Play Store:** SMS permissions need the "SMS-based money management" declaration and are
+  approved case by case. The Settings copy doubles as the prominent disclosure.
+  A notification-listener source is the fallback if the declaration is refused.
 
 ## Domain rules (calc.ts / periods.ts)
 
@@ -131,7 +158,7 @@ need to cite the HIG.
 ## Known gaps / ideas
 
 - ~17 pre-existing prettier lint errors remain in files the refresh didn't touch.
-- No tests. calc.ts is pure and would be easy to unit test.
+- Only the SMS parser/ingest have tests. calc.ts is pure and would be easy to unit test.
 - `Gauge.tsx` and most shadcn ui components are unused.
 - Currency is fixed to ₹ (`completeOnboarding` hard-codes it).
 - Import does only minimal validation: it checks that `expenses` exists.

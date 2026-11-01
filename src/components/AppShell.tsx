@@ -13,6 +13,7 @@ import { AddExpenseSheet } from "@/components/AddExpenseSheet";
 import { AddMoneySheet } from "@/components/AddMoneySheet";
 import { cn } from "@/lib/utils";
 import { hapticTap } from "@/lib/native";
+import { useSmsSync } from "@/lib/sms/use-sms-sync";
 
 const TABS: {
   to: "/" | "/history" | "/overview" | "/settings";
@@ -29,6 +30,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const [expenseOpen, setExpenseOpen] = useState(false);
   const [moneyOpen, setMoneyOpen] = useState(false);
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  useSmsSync();
 
   return (
     <div className="mx-auto flex min-h-[var(--app-height)] w-full max-w-[420px] flex-col pt-[env(safe-area-inset-top)]">
