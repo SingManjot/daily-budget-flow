@@ -100,6 +100,22 @@ plugins/sms-capture/  Local Capacitor plugin (Java), linked via "file:" dependen
   fingerprints already added/dismissed.
 - **Adding a bank format:** add a masked sample to `parser.test.ts`, then adjust patterns in
   `parser.ts`. The Java pre-filter must also accept it (`SmsFilter.java`).
+- **Security invariants (from the Nov 2026 audit; keep them, they are tested):**
+  - Secrets never reach storage. `SECRET` in `SmsFilter.java` (first layer, before the native
+    queue) and in `parser.ts` (second layer) reject anything mentioning OTP, PIN, passcode,
+    password, verification or auth code, CVV, or "do not share". Keep both regexes identical.
+    Missing an expense is acceptable; storing an OTP is not.
+  - Bodies over 2000 chars are rejected before any regex runs (concatenated SMS can reach ~39k).
+  - Only `redactSmsBody` output is stored in `pending[].body` (4+ digit runs masked except the
+    amount). Raw text exists only briefly in the native queue.
+  - The native receiver captures only while `SmsStore` "enabled" is true; `useSmsSync` mirrors
+    the in-app switch into it, and turning the switch off clears the queue.
+  - Export (Settings → Data) blanks `pending[].body` and `sender`.
+  - The receiver is protected by `BROADCAST_SMS`, so only the OS can deliver to it.
+  - The WebView loads only bundled JS (no `server.url`/`allowNavigation`), so only app code
+    can call the bridge. Never add remote scripts or navigation to remote origins.
+  - CI sets `android:allowBackup="false"` after `cap add`. Debug APKs are debuggable (adb
+    `run-as` and WebView inspection), so use the release APK for real data.
 - **Play Store:** SMS permissions need the "SMS-based money management" declaration and are
   approved case by case. The Settings copy doubles as the prominent disclosure.
   A notification-listener source is the fallback if the declaration is refused.

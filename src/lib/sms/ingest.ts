@@ -1,5 +1,5 @@
 import type { AppData, Category, PendingExpense, SmsImportState } from "@/lib/types";
-import { merchantKey, parseBankSms, type RawSms } from "./parser.ts";
+import { merchantKey, parseBankSms, redactSmsBody, type RawSms } from "./parser.ts";
 
 export const SEEN_LIMIT = 2000;
 
@@ -83,7 +83,8 @@ export function buildPending(
         state.merchantCategories,
       ),
       sender: msg.sender,
-      body: msg.body,
+      // Never keep the raw text: long numbers are masked before anything is stored.
+      body: redactSmsBody(msg.body, parsed.amount),
       receivedAt: new Date(msg.timestamp).toISOString(),
     });
   }

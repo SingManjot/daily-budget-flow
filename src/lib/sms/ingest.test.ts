@@ -66,3 +66,10 @@ test("markSeen caps the list and keeps newest", () => {
   assert.equal(seen.length, 2000);
   assert.equal(seen.at(-1), "f2099");
 });
+
+test("stored review items never contain the raw account number or reference", () => {
+  const [item] = buildPending([SWIGGY], base, makeId);
+  assert.ok(item);
+  assert.ok(!item.body.includes("628512345678"), item.body);
+  assert.ok(!item.body.includes("1234"), item.body);
+});

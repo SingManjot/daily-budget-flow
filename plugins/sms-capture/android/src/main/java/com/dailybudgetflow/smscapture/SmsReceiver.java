@@ -18,6 +18,7 @@ public class SmsReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         if (!Telephony.Sms.Intents.SMS_RECEIVED_ACTION.equals(intent.getAction())) return;
+        if (!SmsStore.isEnabled(context)) return;
 
         SmsMessage[] parts = Telephony.Sms.Intents.getMessagesFromIntent(intent);
         if (parts == null || parts.length == 0) return;
@@ -35,7 +36,8 @@ public class SmsReceiver extends BroadcastReceiver {
                 times.put(sender, part.getTimestampMillis());
             }
             String text = part.getDisplayMessageBody();
-            if (text != null) body.append(text);
+            // Stop growing once past the limit; SmsFilter rejects it anyway.
+            if (text != null && body.length() <= SmsFilter.MAX_BODY_LENGTH) body.append(text);
         }
 
         boolean stored = false;

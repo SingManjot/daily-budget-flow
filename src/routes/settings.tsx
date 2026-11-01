@@ -68,7 +68,12 @@ function Settings() {
   };
 
   const exportData = () => {
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+    // Backups land in shared storage, so SMS text and senders are left out of them.
+    const backup = {
+      ...data,
+      pending: data.pending?.map((p) => ({ ...p, body: "", sender: "" })),
+    };
+    const blob = new Blob([JSON.stringify(backup, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;

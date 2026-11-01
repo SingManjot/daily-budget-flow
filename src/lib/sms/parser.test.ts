@@ -4,7 +4,7 @@
 // When a real message isn't parsed correctly, add it here (masked) and fix parser.ts.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { merchantKey, parseBankSms, type RawSms } from "./parser.ts";
+import { merchantKey, parseBankSms, redactSmsBody, type RawSms } from "./parser.ts";
 
 const TS = new Date(2026, 9, 12, 14, 22).getTime(); // 12 Oct 2026, local time
 const sms = (body: string, sender = "AD-HDFCBK"): RawSms => ({
@@ -134,4 +134,37 @@ test("fingerprint is stable and differs per message", () => {
 
 test("merchantKey normalises", () => {
   assert.equal(merchantKey("Amazon Pay India"), "amazonpayindia");
+});
+
+// --- Security: secrets must never be parsed (and therefore never stored) -----------------
+const secrets = [
+  "482913 is your OTP for txn of Rs 500 at AMAZON",
+  "Use 482913 to authorise your txn of Rs.1,500.00 at FLIPKART on HDFC Card 1234. Do not share.",
+  "Your one-time PIN for purchase of INR 2,000 at MYNTRA is 739201. Valid for 10 mins.",
+  "Dear Customer, 5521 is the security code for transaction of Rs 999 at SWIGGY. Never share it.",
+  "Authentication code 66120 for payment of Rs. 300 to Zomato. Do not share with anyone - ICICI Bank",
+  "Passcode 908172 to complete txn of INR 4,999 on Axis Bank card XX4321",
+  "Your 3D Secure password is 445566 for purchase Rs 1200",
+  "Rs 750 debited. Your MPIN was changed. If not you call 1800",
+  "Code 1234 to verify payment of Rs 99 at NETFLIX",
+];
+for (const body of secrets) {
+  test(`secret never parsed: ${body.slice(0, 40)}`, () => {
+    assert.equal(parseBankSms(sms(body)), null);
+  });
+}
+
+test("oversized messages are rejected before parsing", () => {
+  assert.equal(parseBankSms(sms("Rs 5 debited " + "trf to a ".repeat(4000))), null);
+});
+
+test("redactSmsBody masks long numbers but keeps the amount", () => {
+  const body =
+    "Sent Rs.2000.00 From HDFC Bank A/C *1234 To SWIGGY On 12/10/26 Ref 628512345678 Avl Bal Rs 18,450.50 Call 18002586161";
+  const out = redactSmsBody(body, 2000);
+  assert.ok(out.includes("Rs.2000.00"), out);
+  for (const secret of ["1234", "628512345678", "18,450", "18002586161"]) {
+    assert.ok(!out.includes(secret), `${secret} leaked: ${out}`);
+  }
+  assert.ok(out.includes("12/10/26"), "short numbers stay readable");
 });

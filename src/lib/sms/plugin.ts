@@ -11,6 +11,7 @@ interface SmsCapturePlugin {
   getPending(): Promise<{ messages: RawSms[] }>;
   removePending(options: { ids: string[] }): Promise<void>;
   readInbox(options: { since: number; limit?: number }): Promise<{ messages: RawSms[] }>;
+  setEnabled(options: { enabled: boolean }): Promise<void>;
   addListener(event: "smsReceived", fn: () => void): Promise<PluginListenerHandle>;
 }
 
@@ -48,6 +49,12 @@ export async function readInboxSms(days: number): Promise<RawSms[]> {
   if (!smsSupported()) return [];
   const since = Date.now() - days * 24 * 60 * 60 * 1000;
   return (await SmsCapture.readInbox({ since, limit: 1000 })).messages ?? [];
+}
+
+/** Mirror the in-app switch natively. Off stops background capture and clears its queue. */
+export async function setNativeSmsEnabled(enabled: boolean): Promise<void> {
+  if (!smsSupported()) return;
+  await SmsCapture.setEnabled({ enabled });
 }
 
 export function onSmsReceived(fn: () => void): () => void {
